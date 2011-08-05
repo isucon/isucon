@@ -1,1 +1,12 @@
 CAUTION: this project is open for only #isucon administrators
+
+/webapp
+/webapp/perl
+/webapp/ruby
+/webapp/nodejs
+
+/tools
+/tools/benchmark
+/tools/domchecker
+/tools/scoreboard
+
