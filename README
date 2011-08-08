@@ -24,7 +24,7 @@ CAUTION: this project is open for only #isucon administrators
 -- articleのリスト(投稿順(id順) 最新10個)
 --- SELECT id,title,body,created_at FROM article ORDER BY id DESC LIMIT 10
 
-- /:articleid
+- /article/:articleid
 -- GET
 -- articleページの表示 (article + comments)
 --- SELECT id,title,body,created_at FROM article WHERE id=?
@@ -44,12 +44,12 @@ CAUTION: this project is open for only #isucon administrators
 --- INSERT INTO article SET ...
 -- レスポンスは / へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
 
-- /post/:articleid
+- /comment/:articleid
 -- POST
--- コメント投稿 (投稿フォームは /:articleid の末尾)
+-- コメント投稿 (投稿フォームは /article/:articleid の末尾)
 -- パラメータはform形式で name, body
 --- INSERT INTO comment SET ...
--- レスポンスは /post/:articleid へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
+-- レスポンスは /article/:articleid へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
 
 ** 添付するstaticファイル
 
