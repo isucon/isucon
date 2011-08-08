@@ -10,3 +10,33 @@ CAUTION: this project is open for only #isucon administrators
 /tools/domchecker
 /tools/scoreboard
 
+** Webアプリの基本方針
+-処理はすべてリクエストを受け取ってから実施する
+--DBへのクエリ
+--テンプレートからのレンダリング
+-全てのコンテンツをアプリケーションから渡す
+--js/css/画像も含めて
+-キャッシュ等はとりあえず全て無し
+
+** 実装するリクエストハンドラ
+- /
+-- GET
+-- articleのリスト(最新10個)
+
+- /:articleid
+-- GET
+-- articleページの表示 (article + comments)
+
+なお全ページ、左側のサイドバーに「新しいコメントがついた順に記事10件」を表示
+
+- /post
+-- POST
+-- 記事投稿
+-- パラメータはform形式で title, body
+-- レスポンスは / へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
+
+- /post/:articleid
+-- POST
+-- コメント投稿
+-- パラメータはform形式で name, body
+-- レスポンスは /post/:articleid へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
