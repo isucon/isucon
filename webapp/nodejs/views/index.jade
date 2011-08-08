@@ -1,12 +1,10 @@
-!!! html
-html
-  head
-    meta(http-equiv="Content-Type", content="text/html", charset="utf-8")
-    title isucon now!
-    link(type="text/css", href="/css/jquery-ui-1.8.14.custom.css", rel="stylesheet")
-    link(type="text/css", href="/css/isucon.css", rel="stylesheet")
-    script(type="text/javascript", src="/js/jquery-1.6.2.min.js")
-    script(type="text/javascript", src="/js/jquery-ui-1.8.14.custom.min.js")
-    script(type="text/javascript", src="/js/isucon.js")
-  body
-    pre#tester #{sqlresult}
+#sidebar
+  !{sidebar}
+#articleview
+  - each article in articles
+    .article
+      a(href="/article/#{article.id}")
+        .title= article.title
+      .created= article.created_at
+      .body= article.body
+      
