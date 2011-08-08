@@ -34,6 +34,10 @@ CAUTION: this project is open for only #isucon administrators
 --- SELECT article FROM comment GROUP BY article ORDER BY created_at DESC LIMIT 10
 
 - /post
+-- GET
+-- 記事投稿用HTML ただしベンチ対象外のURLとする
+
+- /post
 -- POST
 -- 記事投稿
 -- パラメータはform形式で title, body
@@ -42,7 +46,7 @@ CAUTION: this project is open for only #isucon administrators
 
 - /post/:articleid
 -- POST
--- コメント投稿
+-- コメント投稿 (投稿フォームは /:articleid の末尾)
 -- パラメータはform形式で name, body
 --- INSERT INTO comment SET ...
 -- レスポンスは /post/:articleid へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
