@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS isucon.comment (
   body VARCHAR(1024) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX (article, id DESC),
+  # SELECT article FROM comment GROUP BY article ORDER BY created_at DESC LIMIT 10;
   # INDEX (created_at DESC, article)
   INDEX (article, created_at DESC)
 ) ENGINE=InnoDB;
