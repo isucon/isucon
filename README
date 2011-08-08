@@ -40,3 +40,18 @@ CAUTION: this project is open for only #isucon administrators
 -- コメント投稿
 -- パラメータはform形式で name, body
 -- レスポンスは /post/:articleid へのリダイレクト(成功)、もしくは適当なエラー用のHTTPステータス
+
+** 添付するstaticファイル
+
+- 画像
+-- isuconロゴを適当なサイズにして流用、ページトップのバナー画像にする
+
+- js
+-- jquery 最新版の minify 済みファイル
+-- jquery-ui 最新版の minify 済みファイル
+-- isucon.js デザイン調整用
+
+- css
+-- jquery-ui の適当なスタイル用のもの一式
+-- isucon.css デザイン調整用
+
