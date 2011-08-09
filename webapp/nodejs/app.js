@@ -52,7 +52,7 @@ function IsuException(message) {
    this.name = "IsuException";
 };
 
-var SIDEBAR_ARTICLES_TEMPLATE = 'table\n  - each item in sidebaritems\n    tr\n      td\n        a(href="/article/#{item.id}") #{item.title}';
+var SIDEBAR_ARTICLES_TEMPLATE = 'table\n  tr\n    td\n      新着コメントエントリ\n  - each item in sidebaritems\n    tr\n      td\n        a(href="/article/#{item.id}") #{item.title}';
 var sidebarGenerator = jade.compile(SIDEBAR_ARTICLES_TEMPLATE);
 
 function loadSidebarData(callback){
