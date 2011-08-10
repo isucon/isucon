@@ -55,7 +55,7 @@ function IsuException(message) {
 var SIDEBAR_ARTICLES_TEMPLATE = 'table\n  tr\n    td\n      新着コメントエントリ\n  - each item in sidebaritems\n    tr\n      td\n        a(href="/article/#{item.id}") #{item.title}';
 var sidebarGenerator = jade.compile(SIDEBAR_ARTICLES_TEMPLATE);
 
-function loadSidebarData(callback){
+var loadSidebarData = function(callback){
   dbclient.query(SIDEBAR_ARTICLES_QUERY(), function(err, results){
     if (err) {callback(new IsuException('failed to select recently commented article ids.')); return;}
     var sidebarArticleIds = results.map(function(v){return v.article;});
@@ -63,7 +63,7 @@ function loadSidebarData(callback){
       callback(null, '<table><tr><td>none</td></tr></table>');
       return;
     }
-    var idlist = sidebarArticleIds.concat([]); //TODO better way to copy Array
+    var idlist = sidebarArticleIds.concat();
     dbclient.query(SIDEBAR_DATA_QUERY(sidebarArticleIds.length), sidebarArticleIds, function(err, results){
       if (err) {callback(new IsuException('failed to select article data for sidebar.')); return;}
       var articles = {};
@@ -74,8 +74,6 @@ function loadSidebarData(callback){
     });
   });
 };
-
-//TODO convert from newline to <br /> with article.body, and comment.body
 
 app.get('/', function(req, res){
   var toppage_query = 'SELECT id,title,body,created_at FROM article ORDER BY id DESC LIMIT 10';
