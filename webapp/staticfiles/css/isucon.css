@@ -1,0 +1,22 @@
+body {margin: 0 auto 0 auto; min-width: 980px; max-width: 980px; width: 98%;}
+
+#mainview {margin: 10px;}
+
+#sidebar {width: 250px; float: left; position: relative;}
+#articleview {width: 700px; float: right; position: relative;}
+
+#sidebar table {width: 90%;}
+#sidebar table tr td {margin: 0; padding: 0; border-bottom: 2px solid gray; width: 100%;}
+
+#articleview .article {margin-bottom: 20px;}
+#articleview .article .title {width: 100%; background-color: silver; font-size: large;}
+#articleview .article .created {width: 100%; background-color: teal; font-size: x-small; color: white; text-align: right;}
+#articleview .article .articlelink {width: 100%; font-size: smaller; text-align: right;}
+
+#articleview .comments {margin-top: 20px;}
+#articleview .comments .commenttitle {background-color: olive;}
+#articleview .comments .comment {margin-top: 10px;}
+#articleview .comments .comment .name {color: maroon; font-weight: bolder;}
+#articleview .comments .comment .created {color: gray; font-weight: lighter; font-size: small;}
+
+#articleview .comments .commentform {margin-top: 20px;}
