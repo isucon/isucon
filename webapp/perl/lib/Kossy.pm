@@ -38,6 +38,7 @@ sub psgi {
 
     my $app = $self->build_app;
     $app = builder {
+        enable 'ReverseProxy';
         enable 'Static',
             path => qr!^/(?:(?:css|js|images)/|favicon\.ico$)!,
             root => $self->{root_dir} . '/public';
