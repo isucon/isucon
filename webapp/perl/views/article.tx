@@ -1,0 +1,34 @@
+: cascade base
+
+: around content -> {
+
+<div class="article">
+<div class="title"><: $article.title :></div>
+<div class="created"><: $article.created_at :></div>
+<div class="body"><: $article.body :></div>
+</div>
+
+<div class="comments">
+<div class="commenttitle">以下みなさまの反応</div>
+
+: for $comments -> $comment {
+<div class="comment">
+<div class="name"><: $comment.name :></div>
+<div class="created"><: $comment.created_at :></div>
+<div class="body"><: $comment.body :></div>
+</div>
+: }
+
+<div class="commentform">
+<div class="commenttitle">あなたの反応</div>
+<form method="POST" action="<: $c.req.uri_for('/comment/'~$article.id) :>">
+<table>
+<tr><td>おなまえ: <input type="text" name="name" size="30"/></td></tr>
+<tr><td><textarea name="body" cols="60" rows="4"></textarea></td></tr>
+</table>
+<input type="submit"/>
+</form>
+</div>
+</div>
+
+: }

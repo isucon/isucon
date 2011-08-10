@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+<title>isucon now!</title>
+<link type="text/css" href="<: $c.req.uri_for('/css/jquery-ui-1.8.14.custom.css') :>" rel="stylesheet">
+<link type="text/css" href="<: $c.req.uri_for('/css/isucon.css') :>" rel="stylesheet">
+<script type="text/javascript" src="<: $c.req.uri_for('/js/jquery-1.6.2.min.js') :>"></script>
+<script type="text/javascript" src="<: $c.req.uri_for('/js/jquery-ui-1.8.14.custom.min.js') :>"></script>
+<script type="text/javascript" src="<: $c.req.uri_for('/js/isucon.js') :>"></script>
+</head>
+<body>
+<div id="view">
+<div id="titleimage"><a href="<: $c.req.uri_for('/post') :>"><img src="<: $c.req.uri_for('/images/isucon_title.jpg') :>" style="border: none;"></a></div>
+<div id="mainview">
+<div id="sidebar">
+<table>
+<tr><td>新着コメントエントリ</td></tr>
+: for $c.stash.recent_commented_articles -> $article {
+<tr><td><a href="<: $c.req.uri_for('/article/'~$article.id) :>"><: $article.title :></a></td></tr>
+: }
+</table> 
+</div>
+<div id="articleview">
+: block content -> { }
+</div> 
+</div>
+</body>
+</html>

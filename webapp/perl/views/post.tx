@@ -1,0 +1,13 @@
+: cascade base
+
+: around content -> {
+<form method="POST" action="<: $c.req.uri_for('/post') :>">
+<table>
+<tr><td><input type="text" name="title" size="60"/></td></tr>
+<tr><td><textarea name="body" cols="60" rows="8"></textarea></td></tr>
+</table>
+<input type="submit"/>
+</form>
+: }
+
+

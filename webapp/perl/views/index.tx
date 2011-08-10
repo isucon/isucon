@@ -1,0 +1,14 @@
+: cascade base
+
+: around content -> {
+
+: for $articles -> $article {
+<div class="article">
+<div class="title"><: $article.title :></div>
+<div class="created"><: $article.created_at :></div>
+<div class="body"><: $article.body :></div>
+<div class="articlelink"><a href="<: $c.req.uri_for('/article/'~$article.id) :>">read more</a></div>
+</div>
+: }
+
+: }
