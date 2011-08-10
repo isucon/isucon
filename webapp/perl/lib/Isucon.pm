@@ -22,8 +22,8 @@ filter 'recent_commented_articles' => sub {
     sub {
         my ( $self, $c )  = @_;
         $c->stash->{recent_commented_articles} = $self->dbh->selectall_arrayref(
-            'SELECT DISTINCT a.id, a.title FROM comment c, article a 
-             WHERE c.article = a.id ORDER BY c.created_at DESC LIMIT 10',
+            'SELECT a.id, a.title FROM comment c LEFT JOIN article a ON c.article = a.id 
+            GROUP BY a.id ORDER BY max(c.created_at) DESC LIMIT 10',
             { Slice => {} });
         $app->($self,$c);
     }
@@ -57,7 +57,7 @@ post '/post' => sub {
     my ( $self, $c )  = @_;
     my $sth = $self->dbh->prepare('INSERT INTO article SET title = ?, body = ?');
     $sth->execute($c->req->param('title'), $c->req->param('body'));
-    $c->res->redirect($c->req->uri_for('/'));
+    $c->redirect($c->req->uri_for('/'));
 };
 
 post '/comment/:articleid' => sub {
@@ -69,7 +69,7 @@ post '/comment/:articleid' => sub {
         $c->req->param('name'), 
         $c->req->param('body')
     );
-    $c->res->redirect($c->req->uri_for('/article/'.$c->args->{articleid}));
+    $c->redirect($c->req->uri_for('/article/'.$c->args->{articleid}));
 };
 
 1;

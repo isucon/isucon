@@ -59,7 +59,7 @@ sub build_app {
         input_layer => ':utf8',
     );
 
-    my $app = sub {
+    sub {
         my $env = shift;
         my $c = Kossy::Connection->new({
             tx => $tx,
@@ -108,7 +108,14 @@ sub build_app {
                 $app = $self->wrap_filter($filter,$app);
             }
 
-            return $app->($self, $c)->finalize;
+            return try {
+                $app->($self, $c)->finalize;
+            } catch {
+                if ( ref $_ && ref $_ eq 'Kossy::Exception' ) {
+                    return $_->response;
+                }
+                die $_;
+            };
         }
         return [404, [content_type=>'text/html'], 'Not Found'];
     };
@@ -234,6 +241,12 @@ sub halt {
     die Kossy::Exception->new(@_);
 }
 
+sub redirect {
+    my $self = shift;
+    $self->res->redirect(@_);
+    $self->res;
+}
+
 sub render {
     my $self = shift;
     my $file = shift;
@@ -322,8 +335,6 @@ sub uri_for {
      $uri;
 }
 
-1;
-
 package Kossy::Response;
 
 use strict;
@@ -341,16 +352,6 @@ sub _body {
         return $body;
     }
 }
-
-sub redirect {
-    my $self = shift;
-    if ( @_ ) {
-        $self->SUPER::redirect(@_);
-        return $self;
-    }
-    $self->SUPER::redirect();
-}
-
 
 1;
 
