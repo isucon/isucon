@@ -3,8 +3,9 @@
 #articleview
   - each article in articles
     .article
-      a(href="/article/#{article.id}")
-        .title= article.title
+      .title= article.title
+        = article.title
       .created= article.created_at
       .body= article.body
-      
+      .articlelink
+        a(href="/article/#{article.id}") read more
