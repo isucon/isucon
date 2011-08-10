@@ -63,12 +63,19 @@ function loadSidebarData(callback){
       callback(null, '<table><tr><td>none</td></tr></table>');
       return;
     }
+    var idlist = sidebarArticleIds.concat([]); //TODO better way to copy Array
     dbclient.query(SIDEBAR_DATA_QUERY(sidebarArticleIds.length), sidebarArticleIds, function(err, results){
       if (err) {callback(new IsuException('failed to select article data for sidebar.')); return;}
-      callback(null, sidebarGenerator.call(this, {sidebaritems: results}));
+      var articles = {};
+      results.forEach(function(r){
+        articles[r.id] = r;
+      });
+      callback(null, sidebarGenerator.call(this, {sidebaritems: idlist.map(function(i){return articles[i];})}));
     });
   });
 };
+
+//TODO convert from newline to <br /> with article.body, and comment.body
 
 app.get('/', function(req, res){
   var toppage_query = 'SELECT id,title,body,created_at FROM article ORDER BY id DESC LIMIT 10';
