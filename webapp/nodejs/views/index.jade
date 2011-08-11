@@ -1,17 +1,14 @@
-#sidebar
-  !{sidebar}
-#articleview
-  - each article in articles
-    - lines = article.body.split('\n')
-    - reduced = (lines.length > 8)
-    .article
-      .title= article.title
-      .created= article.created_at
-      .body
-        - each line in lines.slice(0, 8)
-          = line
-          br
-      .articlelink
-        - if (reduced)
-          | ... ...
-        a(href="/article/#{article.id}") read more
+- each article in articles
+  - lines = article.body.split('\n')
+  - reduced = (lines.length > 8)
+  .article
+    .title= article.title
+    .created= article.created_at
+    .body
+      - each line in lines.slice(0, 8)
+        = line
+        br
+    .articlelink
+      - if (reduced)
+        | ... ...
+      a(href="/article/#{article.id}") read more
