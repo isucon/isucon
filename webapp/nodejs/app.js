@@ -1,7 +1,10 @@
 var express = require('express'),
+    fs = require('fs'),
     jade = require('jade'),
     mysql = require('mysql'),
     app = express.createServer();
+
+var config = JSON.parse(fs.readFileSync(__dirname + '/../config/hosts.json', 'utf-8'));
 
 function error_handle(req, res, err){
   console.log(err);
@@ -10,7 +13,7 @@ function error_handle(req, res, err){
 };
 
 var dbclient = mysql.createClient({
-  host: 'localhost',
+  host: config.servers.database[0],
   port: 3306,
   user: 'isuconapp',
   password: 'isunageruna',
