@@ -30,23 +30,6 @@ app.configure(function(){
   app.use(app.router);
 });
 
-var SIDEBAR_ARTICLES_QUERY = function(){
-  return 'SELECT article FROM comment GROUP BY article ORDER BY created_at DESC LIMIT 10';
-};
-var SIDEBAR_DATA_QUERY = function(articles){
-  if (articles < 1) {
-    throw new RangeError('SIDEBAR needs 1 or more articles');
-  }
-  if (articles > 10) {
-    throw new RangeError('SIDEBAR floods with 11 or more articles');
-  }
-  var whereclauseparts = [];
-  for (var i = 0; i < articles; i++) {
-    whereclauseparts = whereclauseparts.concat(['id=?']);
-  }
-  return 'SELECT id,title FROM article WHERE ' + whereclauseparts.join(' OR ');
-};
-
 function IsuException(message) {
    this.message = message;
    this.name = "IsuException";
@@ -55,23 +38,15 @@ function IsuException(message) {
 var SIDEBAR_ARTICLES_TEMPLATE = 'table\n  tr\n    td\n      新着コメントエントリ\n  - each item in sidebaritems\n    tr\n      td\n        a(href="/article/#{item.id}") #{item.title}';
 var sidebarGenerator = jade.compile(SIDEBAR_ARTICLES_TEMPLATE);
 
+var RECENT_COMMENTED_ARTICLES = 'SELECT a.id, a.title FROM comment c LEFT JOIN article a ON c.article = a.id GROUP BY a.id ORDER BY MAX(c.created_at) DESC LIMIT 10';
+
 var loadSidebarData = function(callback){
-  dbclient.query(SIDEBAR_ARTICLES_QUERY(), function(err, results){
+  dbclient.query(RECENT_COMMENTED_ARTICLES, function(err, results){
     if (err) {callback(new IsuException('failed to select recently commented article ids.')); return;}
-    var sidebarArticleIds = results.map(function(v){return v.article;});
-    if (sidebarArticleIds.length < 1) {
-      callback(null, '<table><tr><td>none</td></tr></table>');
-      return;
+    if (results.length < 1) {
+      callback(null, '<table><tr><td>none</td></tr></table>'); return;
     }
-    var idlist = sidebarArticleIds.concat();
-    dbclient.query(SIDEBAR_DATA_QUERY(sidebarArticleIds.length), sidebarArticleIds, function(err, results){
-      if (err) {callback(new IsuException('failed to select article data for sidebar.')); return;}
-      var articles = {};
-      results.forEach(function(r){
-        articles[r.id] = r;
-      });
-      callback(null, sidebarGenerator.call(this, {sidebaritems: idlist.map(function(i){return articles[i];})}));
-    });
+    callback(null, sidebarGenerator.call(this, {sidebaritems: results}));
   });
 };
 
