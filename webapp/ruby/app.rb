@@ -4,11 +4,15 @@ require 'sinatra/base'
 require 'haml'
 require 'mysql'
 
+require 'json'
+
+File.open(File.dirname(__FILE__) + '/../config/hosts.json'){|f| $config = JSON.parse(f.read)}
+
 module Sinatra
   module ISUConHelper
     def connection
       return @handler if @handler
-      @handler = Mysql.connect('localhost', 'isuconapp', 'isunageruna', 'isucon', 3306)
+      @handler = Mysql.connect($config['servers']['database'].first, 'isuconapp', 'isunageruna', 'isucon', 3306)
       @handler.charset = 'utf8'
       @handler
     end
