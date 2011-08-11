@@ -1,0 +1,16 @@
+-# coding: utf-8
+- articles.each do |article|
+  .article
+    .title&= article[:title]
+    .created&= article[:created_at]
+    - line_num = 1
+    .body
+      - article[:body].lines do |line|
+        - break if line_num > 8
+        &= line
+        %br
+        - line_num += 1
+    .articlelink
+      - if line_num > 8
+        \ ... ...
+      %a{:href => "/article/#{article[:id]}"} read more
