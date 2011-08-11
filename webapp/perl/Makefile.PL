@@ -1,0 +1,19 @@
+use inc::Module::Install;
+name 'Isucon';
+all_from 'lib/Isucon.pm';
+
+requires 'parent';
+requires 'Scalar::Util';
+requires 'Plack';
+requires 'Plack::Middleware::Static';
+requires 'Plack::Middleware::ReverseProxy';
+requires 'Router::Simple';
+requires 'Cwd';
+requires 'File::Basename';
+requires 'Text::Xslate', 1.1003;
+requires 'Try::Tiny', 0.09;
+requires 'Class::Accessor::Lite';
+requires 'DBI';
+requires 'DBD::mysql';
+
+WriteAll;

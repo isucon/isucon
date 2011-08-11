@@ -6,6 +6,8 @@ use utf8;
 use Kossy;
 use DBI;
 
+our $VERSION = 0.01;
+
 sub dbh {
     my $self = shift;
     DBI->connect_cached('dbi:mysql:isucon;host=127.0.0.1','isucon','isucon',{
@@ -23,7 +25,7 @@ filter 'recent_commented_articles' => sub {
         my ( $self, $c )  = @_;
         $c->stash->{recent_commented_articles} = $self->dbh->selectall_arrayref(
             'SELECT a.id, a.title FROM comment c LEFT JOIN article a ON c.article = a.id 
-            GROUP BY a.id ORDER BY max(c.created_at) DESC LIMIT 10',
+            GROUP BY a.id ORDER BY MAX(c.created_at) DESC LIMIT 10',
             { Slice => {} });
         $app->($self,$c);
     }
