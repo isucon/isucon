@@ -1,32 +1,29 @@
-#sidebar
-  !{sidebar}
-#articleview
-  .article
-    .title= article.title
-    .created= article.created_at
-    .body
-      - each line in article.body.split('\n')
-        = line
-        br
-  .comments
-    .commenttitle 以下みなさまの反応
-    - each comment in comments
-      .comment
-        .name= (comment.name && comment.name.length > 0) ? comment.name : "名無しさん"
-        .created= comment.created_at
-        .body
-          - each line in comment.body.split('\n')
-            = line
-            br
-    .commentform
-      .commenttitle あなたの反応
-      form(method="POST", action="/comment/#{article.id}")
-        table
-          tr
-            td
-              おなまえ: 
-              input(type="text", name="name", size=30)
-          tr
-            td
-              textarea(name="body", cols=60, rows=4)
-        input(type="submit")
+.article
+  .title= article.title
+  .created= formatDate(article.created_at)
+  .body
+    - each line in article.body.split('\n')
+      = line
+      br
+.comments
+  .commenttitle 以下みなさまの反応
+  - each comment in comments
+    .comment
+      .name= (comment.name && comment.name.length > 0) ? comment.name : "名無しさん"
+      .created= formatDate(comment.created_at)
+      .body
+        - each line in comment.body.split('\n')
+          = line
+          br
+  .commentform
+    .commenttitle あなたの反応
+    form(method="POST", action="/comment/#{article.id}")
+      table
+        tr
+          td
+            おなまえ: 
+            input(type="text", name="name", size=30)
+        tr
+          td
+            textarea(name="body", cols=60, rows=4)
+      input(type="submit")

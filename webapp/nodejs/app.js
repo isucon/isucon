@@ -1,7 +1,10 @@
 var express = require('express'),
+    fs = require('fs'),
     jade = require('jade'),
     mysql = require('mysql'),
     app = express.createServer();
+
+var config = JSON.parse(fs.readFileSync(__dirname + '/../config/hosts.json', 'utf-8'));
 
 function error_handle(req, res, err){
   console.log(err);
@@ -9,8 +12,15 @@ function error_handle(req, res, err){
   res.send(err, 500);
 };
 
+function formatDate(d){
+  var pad = function(n){return n < 10 ? '0' + n : n;};
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+    + ' '
+    + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+};
+
 var dbclient = mysql.createClient({
-  host: 'localhost',
+  host: config.servers.database[0],
   port: 3306,
   user: 'isuconapp',
   password: 'isunageruna',
@@ -30,64 +40,36 @@ app.configure(function(){
   app.use(app.router);
 });
 
-var SIDEBAR_ARTICLES_QUERY = function(){
-  return 'SELECT article FROM comment GROUP BY article ORDER BY created_at DESC LIMIT 10';
-};
-var SIDEBAR_DATA_QUERY = function(articles){
-  if (articles < 1) {
-    throw new RangeError('SIDEBAR needs 1 or more articles');
-  }
-  if (articles > 10) {
-    throw new RangeError('SIDEBAR floods with 11 or more articles');
-  }
-  var whereclauseparts = [];
-  for (var i = 0; i < articles; i++) {
-    whereclauseparts = whereclauseparts.concat(['id=?']);
-  }
-  return 'SELECT id,title FROM article WHERE ' + whereclauseparts.join(' OR ');
-};
-
 function IsuException(message) {
    this.message = message;
    this.name = "IsuException";
 };
 
-var SIDEBAR_ARTICLES_TEMPLATE = 'table\n  tr\n    td\n      新着コメントエントリ\n  - each item in sidebaritems\n    tr\n      td\n        a(href="/article/#{item.id}") #{item.title}';
-var sidebarGenerator = jade.compile(SIDEBAR_ARTICLES_TEMPLATE);
+var RECENT_COMMENTED_ARTICLES = 'SELECT a.id, a.title FROM comment c LEFT JOIN article a ON c.article = a.id GROUP BY a.id ORDER BY MAX(c.created_at) DESC LIMIT 10';
 
 var loadSidebarData = function(callback){
-  dbclient.query(SIDEBAR_ARTICLES_QUERY(), function(err, results){
+  dbclient.query(RECENT_COMMENTED_ARTICLES, function(err, results){
     if (err) {callback(new IsuException('failed to select recently commented article ids.')); return;}
-    var sidebarArticleIds = results.map(function(v){return v.article;});
-    if (sidebarArticleIds.length < 1) {
-      callback(null, '<table><tr><td>none</td></tr></table>');
-      return;
-    }
-    var idlist = sidebarArticleIds.concat();
-    dbclient.query(SIDEBAR_DATA_QUERY(sidebarArticleIds.length), sidebarArticleIds, function(err, results){
-      if (err) {callback(new IsuException('failed to select article data for sidebar.')); return;}
-      var articles = {};
-      results.forEach(function(r){
-        articles[r.id] = r;
-      });
-      callback(null, sidebarGenerator.call(this, {sidebaritems: idlist.map(function(i){return articles[i];})}));
-    });
+    callback(null, results);
   });
 };
 
 app.get('/', function(req, res){
   var toppage_query = 'SELECT id,title,body,created_at FROM article ORDER BY id DESC LIMIT 10';
-  loadSidebarData(function(err, sidebarHtml){
+  loadSidebarData(function(err, sidebaritems){
     if (err) {error_handle(req, res, err); return;}
     dbclient.query(toppage_query, function(err, results){
       if (err) {error_handle(req, res, err); return;}
-      res.render('index', {sidebar: sidebarHtml, articles: results});
+      res.render('index', {formatDate: formatDate, sidebaritems: sidebaritems, articles: results});
     });
   });
 });
 
 app.get('/post', function(req, res){
-  res.render('post');
+  loadSidebarData(function(err, sidebaritems){
+    if (err) {error_handle(req, res, err); return;}
+    res.render('post', {formatDate: formatDate, sidebaritems: sidebaritems});
+  });
 });
 
 app.post('/post', function(req, res){
@@ -104,7 +86,7 @@ app.get('/article/:articleid', function(req, res){
   var article_query = 'SELECT id,title,body,created_at FROM article WHERE id=?';
   var comments_query = 'SELECT name,body,created_at FROM comment WHERE article=? ORDER BY id';
   var articleid = req.params.articleid;
-  loadSidebarData(function(err, sidebarHtml){
+  loadSidebarData(function(err, sidebaritems){
     if (err) {error_handle(req, res, err); return;}
     dbclient.query(article_query, [articleid], function(err, results){
       if (err) {error_handle(req, res, err); return;}
@@ -115,7 +97,7 @@ app.get('/article/:articleid', function(req, res){
       var article = results[0];
       dbclient.query(comments_query, [articleid], function(err, results){
         if (err) {error_handle(req, res, err); return;}
-        res.render('article', {sidebar: sidebarHtml, article: article, comments: results});
+        res.render('article', {formatDate: formatDate, sidebaritems: sidebaritems, article: article, comments: results});
       });
     });
   });

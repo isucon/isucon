@@ -2,6 +2,8 @@ CREATE DATABASE IF NOT EXISTS isucon DEFAULT CHARACTER SET 'utf8';
 
 CREATE USER 'isuconapp'@'%' IDENTIFIED BY 'isunageruna';
 GRANT ALL ON isucon.* TO 'isuconapp'@'%';
+CREATE USER 'isuconapp'@'localhost' IDENTIFIED BY 'isunageruna';
+GRANT ALL ON isucon.* TO 'isuconapp'@'localhost';
 
 FLUSH PRIVILEGES;
 

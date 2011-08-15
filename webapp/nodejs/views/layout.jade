@@ -14,4 +14,13 @@ html
         a(href="/post")
           img(src="/images/isucon_title.jpg", style="border: none;")
       #mainview
-        !{body}
+        #sidebar
+          table
+            tr
+              td 新着コメントエントリ
+            - each item in sidebaritems
+              tr
+                td
+                  a(href="/article/#{item.id}") #{item.title}
+        #articleview
+          !{body}
