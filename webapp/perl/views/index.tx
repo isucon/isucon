@@ -3,12 +3,23 @@
 : around content -> {
 
 : for $articles -> $article {
+: my $lines = split($article.body);
 <div class="article">
 <div class="title"><: $article.title :></div>
 <div class="created"><: $article.created_at :></div>
-<div class="body"><: $article.body :></div>
-<div class="articlelink"><a href="<: $c.req.uri_for('/article/'~$article.id) :>">read more</a></div>
+<div class="body">
+: for $lines -> $line {
+<: $line :><br />
+: last if $~line.count == 8
+: }
+</div>
+<div class="articlelink">
+: if ( $lines.size() > 8 ) {
+... ...
+: }
+<a href="<: $c.req.uri_for('/article/'~$article.id) :>">read more</a></div>
 </div>
 : }
 
 : }
+

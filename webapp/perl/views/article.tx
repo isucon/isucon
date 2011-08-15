@@ -1,21 +1,30 @@
 : cascade base
 
 : around content -> {
-
+: my $lines = split($article.body)
 <div class="article">
 <div class="title"><: $article.title :></div>
 <div class="created"><: $article.created_at :></div>
-<div class="body"><: $article.body :></div>
+<div class="body">
+: for $lines -> $line {
+<: $line :><br />
+: }
+</div>
 </div>
 
 <div class="comments">
 <div class="commenttitle">以下みなさまの反応</div>
 
 : for $comments -> $comment {
+: my $comment_lines = split($comment.body);
 <div class="comment">
 <div class="name"><: $comment.name :></div>
 <div class="created"><: $comment.created_at :></div>
-<div class="body"><: $comment.body :></div>
+<div class="body">
+: for $comment_lines -> $line {
+<: $line :><br />
+: }
+</div>
 </div>
 : }
 
