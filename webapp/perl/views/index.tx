@@ -3,14 +3,14 @@
 : around content -> {
 
 : for $articles -> $article {
-: my $lines = split($article.body);
 <div class="article">
 <div class="title"><: $article.title :></div>
 <div class="created"><: $article.created_at :></div>
 <div class="body">
+: my $lines = $article.body.split("\n")
 : for $lines -> $line {
+: last if $~line.count > 8
 <: $line :><br />
-: last if $~line.count == 8
 : }
 </div>
 <div class="articlelink">

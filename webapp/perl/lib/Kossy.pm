@@ -57,9 +57,7 @@ sub build_app {
     my $tx = Text::Xslate->new(
         path => [ $self->root_dir . '/views' ],
         input_layer => ':utf8',
-        function => {
-            'split' => sub { [ split /\n/, $_[0] ] }
-        }
+        module => ['Text::Xslate::Bridge::TT2Like']
     );
 
     sub {
