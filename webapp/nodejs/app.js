@@ -12,6 +12,13 @@ function error_handle(req, res, err){
   res.send(err, 500);
 };
 
+function formatDate(d){
+  var pad = function(n){return n < 10 ? '0' + n : n;};
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+    + ' '
+    + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+};
+
 var dbclient = mysql.createClient({
   host: config.servers.database[0],
   port: 3306,
@@ -53,7 +60,7 @@ app.get('/', function(req, res){
     if (err) {error_handle(req, res, err); return;}
     dbclient.query(toppage_query, function(err, results){
       if (err) {error_handle(req, res, err); return;}
-      res.render('index', {sidebaritems: sidebaritems, articles: results});
+      res.render('index', {formatDate: formatDate, sidebaritems: sidebaritems, articles: results});
     });
   });
 });
@@ -61,7 +68,7 @@ app.get('/', function(req, res){
 app.get('/post', function(req, res){
   loadSidebarData(function(err, sidebaritems){
     if (err) {error_handle(req, res, err); return;}
-    res.render('post', {sidebaritems: sidebaritems});
+    res.render('post', {formatDate: formatDate, sidebaritems: sidebaritems});
   });
 });
 
@@ -90,7 +97,7 @@ app.get('/article/:articleid', function(req, res){
       var article = results[0];
       dbclient.query(comments_query, [articleid], function(err, results){
         if (err) {error_handle(req, res, err); return;}
-        res.render('article', {sidebaritems: sidebaritems, article: article, comments: results});
+        res.render('article', {formatDate: formatDate, sidebaritems: sidebaritems, article: article, comments: results});
       });
     });
   });

@@ -3,7 +3,7 @@
   - reduced = (lines.length > 8)
   .article
     .title= article.title
-    .created= article.created_at
+    .created= formatDate(article.created_at)
     .body
       - each line in lines.slice(0, 8)
         = line

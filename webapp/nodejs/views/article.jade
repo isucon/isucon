@@ -1,6 +1,6 @@
 .article
   .title= article.title
-  .created= article.created_at
+  .created= formatDate(article.created_at)
   .body
     - each line in article.body.split('\n')
       = line
@@ -10,7 +10,7 @@
   - each comment in comments
     .comment
       .name= (comment.name && comment.name.length > 0) ? comment.name : "名無しさん"
-      .created= comment.created_at
+      .created= formatDate(comment.created_at)
       .body
         - each line in comment.body.split('\n')
           = line
