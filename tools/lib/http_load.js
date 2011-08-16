@@ -1,9 +1,9 @@
 var exec = require('child_process').exec;
 
-var HTTP_LOAD_PATH = __dirname + '/http_load/http_load';
+var HTTP_LOAD_PATH = __dirname + '/../http_load-12mar2006/http_load';
 
 var start = exports.start = function(urlsFilePath, options, callback){
-  var command = HTTP_LOAD_PATH + ' ' + buildOptions(options);
+  var command = HTTP_LOAD_PATH + ' ' + buildOptions(options) + ' ' + urlsFilePath;
   var child = exec(command, function(error, stdout, stderr){
     if (error) {
       callback(error, stdout);
