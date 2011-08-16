@@ -1,2 +1,4 @@
 *~
 webapp/config/hosts.json
+data/isucon_*
+tools/http_load-12mar2006
