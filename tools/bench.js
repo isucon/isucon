@@ -4,9 +4,9 @@ var http_load = require('http_load');
 var engine = require('bench_engine.js');
 
 var HTTP_LOAD_PARALLEL = 5;
-var HTTP_LOAD_SECONDS = 180;
+var HTTP_LOAD_SECONDS = 20;//180;
 var COMMENT_POST_INTERVALS = 50; //milliseconds
-var CHEKCER_START_DURATION = 30000; //milliseconds
+var CHEKCER_START_DURATION = 10000;//30000; //milliseconds
 
 var config = JSON.parse(fs.readFileSync(__dirname + '/../webapp/config/hosts.json', 'utf-8'));
 var targetHost = config.servers.reverseproxy[0];
@@ -67,31 +67,37 @@ function commentposter(){
 
 var checker_retry = false;
 function checker(uriContentPairs, callback){
-  engine.getArticle(uriContentPairs[Math.floor(Math.random() * uriContentPairs.length)][0], targetHost, function(err, content){
+  var checkTargetPair = uriContentPairs[Math.floor(Math.random() * uriContentPairs.length)];
+  engine.getArticle(checkTargetPair[0], targetHost, function(err, content){
     if (err) {
       if (!checker_retry) {
         checker_retry = true;
         process.nextTick(function(){checker(uriContentPairs, callback);});
       }
       else {
-        callback({check:'error'});
+        callback({summary:'error'});
       }
       return;
     }
     engine.parseHtml(content, function($){
       //check of dom
+      var checkresult = {};
+      checkresult.postlink = ($('#view #titleimage a').attr('href') == '/post');
+      checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
+      checkresult.title = ($('#articleview .article .title').text() == checkTargetPair[1].title);
+      checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d$/.exec($('#articleview .article .created').text()) ? true : false);
+      checkresult.body = ($('#articleview .article .body').html().replace(/<br>$/, '') == checkTargetPair[1].body.split('\n').join('<br>'));
 
-
-      if (false)
-        callback({check:'fail'});
-      else
-        callback({check:'success'});
+      var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);
+      checkresult.summary = (summary ? 'success' : 'fail');
+      callback(checkresult);
     });
   });
 };
 
 function output(dirpath, result, checker_result){
-  fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), JSON.stringify({bench: result, checker: checker_result}), 'utf8');
+  var data = JSON.stringify({bench: result, checker: checker_result}, null, '\t') + '\n';
+  fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), data, 'utf8');
 };
 
 prepare(function(dirpath, filepath, uriContentPairs){
