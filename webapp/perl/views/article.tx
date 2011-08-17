@@ -1,11 +1,14 @@
 : cascade base
 
 : around content -> {
-
 <div class="article">
 <div class="title"><: $article.title :></div>
 <div class="created"><: $article.created_at :></div>
-<div class="body"><: $article.body :></div>
+<div class="body">
+: for $article.body.split("\n") -> $line {
+<: $line :><br />
+: }
+</div>
 </div>
 
 <div class="comments">
@@ -15,7 +18,11 @@
 <div class="comment">
 <div class="name"><: $comment.name :></div>
 <div class="created"><: $comment.created_at :></div>
-<div class="body"><: $comment.body :></div>
+<div class="body">
+: for $comment.body.split("\n") -> $line {
+<: $line :><br />
+: }
+</div>
 </div>
 : }
 
