@@ -13,14 +13,25 @@ var parseHtml = exports.parseHtml = function(content, callback){
 };
 
 
-var http = require('http'),
-    async = require('async');
+var http = require('http');
 
-var getArticle = exports.getArticle = function(path, hostname, callback){
-  http.get({host: hostname, port: /* 80 */ 5000, path: path}, function(res){
+var getArticle = exports.getArticle = function(path, hostname, portnum, retry, callback){
+  if (!callback && retry) {
+    callback = retry;
+    retry = undefined;
+  }
+  http.get({host: hostname, port: portnum, path: path}, function(res){
     if (res.statusCode !== 200) {
-      console.log({error: 'error for GET ' + path + ' in prepare phase.', response: res});
-      callback({error: 'error for GET ' + path + ' in prepare phase.', response: res});
+      if (retry) {
+        process.nextTick(function(){
+          getArticle(path, hostname, portnum, false, callback);
+        });
+      }
+      else {
+        console.log({error: 'error for GET ' + path + ' in prepare phase.', response: res});
+        callback({error: 'error for GET ' + path + ' in prepare phase.', response: res});
+      }
+      return;
     }
     res.setEncoding('utf8');
     var content = '';
@@ -30,6 +41,12 @@ var getArticle = exports.getArticle = function(path, hostname, callback){
       callback(null, content);
     });
   }).on('error', function(e){
+    if (retry) {
+      process.nextTick(function(){
+        getArticle(path, hostname, portnum, false, callback);
+      });
+      return;
+    }
     console.log({error: e});
     callback({error: e});
   });
@@ -70,65 +87,85 @@ function articleIdToCommentPath(articleid){
   return '/comment/' + articleid;
 };
 
-var postArticles = exports.postArticles = function(options, callback){
-  var articles = options.articles || 5;
+var postArticle = exports.postArticle = function(options, callback){
   var articlesize = options.articlesize || 1000;
-  var startid = options.startid || 1;
+  var articleid = options.startid || 1;
   var hostname = options.hostname;
+  var portnum = options.portnum;
 
-  var uriContentPairs = [];
-  var closures = [];
-
-  for (var i = 0; i < articles; i++){
-    var articleid = startid + i;
-    var formdata = {title:randomString(20).split('\n').join(''), body:randomString(articlesize)};
-    uriContentPairs.push(['/article/' + articleid, formdata]);
-
-    closures.push(function(cb){
-      var data = (uriContentPairs.shift())[1];
-      var req = http.request({
-        host: hostname, port: /* 80 */ 5000,
-        method:'POST', path:'/post', headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-      }, function(res){
-        if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
-          cb(null, 'ok');
-        else {
-          cb({message:'post response has error status', code: res.statusCode, res: res});
-        }
-      });
-      req.on('error',function(err){
-        cb({message:'error in http.request', error:err});
-      });
-      req.write(generateFormBody(data));
-      req.end();
-    });
-  }
-  var uriContentPairsCopy = uriContentPairs.concat();
-  async.series(closures, function(err, results){
-    if (err) { callback(err); return; }
-    callback(null, uriContentPairsCopy);
+  var formdata = {title:randomString(20).split('\n').join(''), body:randomString(articlesize)};
+  var req = http.request({
+    host: hostname, port: portnum,
+    method:'POST', path:'/post', headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+  }, function(res){
+    if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
+      callback(null, articleid, formdata);
+    else {
+      callback({message:'post response has error status', code: res.statusCode, res: res});
+    }
   });
+  req.on('error',function(err){
+    callback({message:'error in http.request', error:err});
+  });
+  req.write(generateFormBody(formdata));
+  req.end();
 };
 
-var etcContentList = [
+var postComment = exports.postComment = function(options, callback){
+  var articleid = options.articleid;
+  var commentsize = options.size || 150;
+  var hostname = options.hostname;
+  var portnum = options.portnum;
+
+  var commentname = (Math.random() * 2 > 1) ? randomString(5) : '';
+  var commentbody = randomString(commentsize);
+  var req = http.request({
+    host: hostname, port: portnum,
+    method: 'POST', path: '/comment/' + articleid, headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+  }, function(res){
+    if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
+      callback(null, commentname, commentbody);
+    else {
+      callback({message:'post response has error status', code: res.statusCode, res: res});
+    }
+  });
+  req.on('error', function(err){ callback({message:'error in http.request for comment', error: err}); });
+  req.write(generateFormBody({name: commentname, body: commentbody}));
+  req.end();
+};
+
+var indexList = [
+  '/',
   '/css/jquery-ui-1.8.14.custom.css',
   '/css/isucon.css',
   '/js/jquery-1.6.2.min.js',
   '/js/jquery-ui-1.8.14.custom.min.js',
   '/js/isucon.js',
-  '/images/isucon_title.jpg',
-  '/'
+  '/images/isucon_title.jpg'
 ];
 
 var fs = require('fs');
 var config = JSON.parse(fs.readFileSync(__dirname + '/../../webapp/config/hosts.json', 'utf-8'));
 
-var generateUrlsFile = exports.generateUrlsFile = function(hostname, uriContentPairs, callback){
+var generateUrlsFile = exports.generateUrlsFile = function(hostname, portnum, mainTargetId, callback){
+  var genUrl = function(path){return 'http://' + hostname + (portnum === 80 ? '' : ':' + portnum) + path;};
+
   var dirpath = __dirname + '/../data/isucon_' + (new Date()).getTime();
   fs.mkdirSync(dirpath, 0755);
   var filepath = dirpath + '/urls';
-  var paths = etcContentList.concat(uriContentPairs.map(function(pair){return pair[0];}));
-  var urlsFileBody = paths.map(function(p){return 'http://' + hostname + ':5000' + p;}).join('\n');
+
+  var paths = [];
+  var indexAndMisc = indexList.map(genUrl).join('\n') + '\n';
+
+  for(var i = 0; i < 20; i++)
+    paths.push(indexAndMisc);
+  for(var j = 0; j < 30; j++)
+    paths.push(genUrl('/article/' + mainTargetId) + '\n');
+  for(var k = 0; k < 50; k++)
+    paths.push(genUrl('/article/' + Math.floor(Math.random() * mainTargetId + 1)) + '\n');
+
+  var urlsFileBody = paths.join() + '\n';
   fs.writeFileSync(filepath, urlsFileBody, 'utf8');
-  callback(dirpath, filepath);
+
+  callback(dirpath);
 };
