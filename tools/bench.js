@@ -35,10 +35,10 @@ function prepare(callback){
         var matched = /\/article\/(\d+)$/.exec(latestArticleURI);
         articleId = Number(matched[1]) + 1;
       }
-      engine.postArticle({hostname:targetHost, portnum:targetPort, articlesize:1000, articleid:articleId}, function(err, articleid, data){
-        if (err){
-          process.exit(1);
-        }
+      engine.postArticle({
+        hostname:targetHost, portnum:targetPort, articlesize:1000, articleid:articleId
+      }, function(err, articleid, data){
+        if (err){ console.log('failed to post new article'); process.exit(1); }
         engine.generateUrlsFile(targetHost, targetPort, articleid, function(dirpath){
           callback(dirpath, articleid, data);
         });
@@ -55,7 +55,16 @@ process.on('SIGUSR1', function(){
 function load(dirpath, articleid, data){
   var checker_result = null;
   var poster_result = null;
+
+  setTimeout(function(){checker(articleid, data, function(r){checker_result = r;});}, CHEKCER_START_DURATION);
+
+  var posterId = setInterval(function(){
+    commentposter(articleid, function(r){poster_result = (poster_result && r);});
+  }, COMMENT_POST_INTERVALS);
+
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
+    if (err) { console.log('error on http_load'); console.log(err); }
+    clearInterval(posterId);
     output(dirpath, result, checker_result);
     if (loading && continuousMode)
       process.nextTick(function(){
@@ -64,8 +73,6 @@ function load(dirpath, articleid, data){
     else
       process.exit(0);
   });
-  setTimeout(function(){checker(articleid, data, function(r){checker_result = r;});}, CHEKCER_START_DURATION);
-  setInterval(function(){commentposter(articleid, function(r){poster_result = r;});}, COMMENT_POST_INTERVALS);
 };
 
 function commentposter(maxArticleId, callback){
@@ -132,6 +139,8 @@ function checkArticle(articleid, data, callback){
     articleid = article.id;
     data = article.data;
   }
+  console.log({id: articleid, data: data});
+  console.log('---------------------------');
   engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
     if (err) {
       callback({summary:'error'});
@@ -143,8 +152,14 @@ function checkArticle(articleid, data, callback){
       checkresult.articleid = articleid;
       checkresult.postlink = ($('#view #titleimage a').attr('href') == '/post');
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
+      console.log('data' + data.title);
+      console.log('view' + $('#articleview .article .title').text());
       checkresult.title = ($('#articleview .article .title').text() == data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d$/.exec($('#articleview .article .created').text()) ? true : false);
+      console.log('=============================');
+      console.log(data.body.split('\n').join('<br>'));
+      console.log('=============================');
+      console.log($('#articleview .article .body').html().replace(/<br>$/, ''));
       checkresult.body = ($('#articleview .article .body').html().replace(/<br>$/, '') == data.body.split('\n').join('<br>'));
 
       var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);

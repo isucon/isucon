@@ -20,7 +20,9 @@ var getArticle = exports.getArticle = function(path, hostname, portnum, retry, c
     callback = retry;
     retry = undefined;
   }
-  http.get({host: hostname, port: portnum, path: path}, function(res){
+  http.get({
+    host: hostname, port: portnum, path: path, headers: {'User-Agent': 'ISUCon bench agent v1.0'}
+  }, function(res){
     if (res.statusCode !== 200) {
       if (retry) {
         process.nextTick(function(){
@@ -28,8 +30,8 @@ var getArticle = exports.getArticle = function(path, hostname, portnum, retry, c
         });
       }
       else {
-        console.log({error: 'error for GET ' + path + ' in prepare phase.', response: res});
-        callback({error: 'error for GET ' + path + ' in prepare phase.', response: res});
+        console.log({error: 'error for GET ' + path, response: res});
+        callback({error: 'error for GET ' + path, response: res});
       }
       return;
     }
@@ -89,14 +91,14 @@ function articleIdToCommentPath(articleid){
 
 var postArticle = exports.postArticle = function(options, callback){
   var articlesize = options.articlesize || 1000;
-  var articleid = options.startid || 1;
+  var articleid = options.articleid || 1;
   var hostname = options.hostname;
   var portnum = options.portnum;
 
   var formdata = {title:randomString(20).split('\n').join(''), body:randomString(articlesize)};
   var req = http.request({
-    host: hostname, port: portnum,
-    method:'POST', path:'/post', headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    host: hostname, port: portnum, method:'POST', path:'/post',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'ISUCon bench agent v1.0'}
   }, function(res){
     if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
       callback(null, articleid, formdata);
@@ -120,8 +122,8 @@ var postComment = exports.postComment = function(options, callback){
   var commentname = (Math.random() * 2 > 1) ? randomString(5) : '';
   var commentbody = randomString(commentsize);
   var req = http.request({
-    host: hostname, port: portnum,
-    method: 'POST', path: '/comment/' + articleid, headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    host: hostname, port: portnum, method: 'POST', path: '/comment/' + articleid,
+    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'ISUCon bench agent v1.0'}
   }, function(res){
     if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
       callback(null, commentname, commentbody);
@@ -164,7 +166,7 @@ var generateUrlsFile = exports.generateUrlsFile = function(hostname, portnum, ma
   for(var k = 0; k < 50; k++)
     paths.push(genUrl('/article/' + Math.floor(Math.random() * mainTargetId + 1)) + '\n');
 
-  var urlsFileBody = paths.join() + '\n';
+  var urlsFileBody = paths.join('');
   fs.writeFileSync(filepath, urlsFileBody, 'utf8');
 
   callback(dirpath);
