@@ -147,7 +147,6 @@ var indexList = [
 ];
 
 var fs = require('fs');
-var config = JSON.parse(fs.readFileSync(__dirname + '/../../webapp/config/hosts.json', 'utf-8'));
 
 var generateUrlsFile = exports.generateUrlsFile = function(hostname, portnum, mainTargetId, callback){
   var genUrl = function(path){return 'http://' + hostname + (portnum === 80 ? '' : ':' + portnum) + path;};
