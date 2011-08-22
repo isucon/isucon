@@ -1,16 +1,16 @@
 {
   "master":{
-    "host":"localhost:3080",
+    "host":"125.6.147.250:3080",
     "pass":""
   },
   "bench": {
-    "bench01": "localhost:3101",
-    "bench02": "localhost:3101",
-    "bench03": "localhost:3101",
-    "bench04": "localhost:3101",
-    "bench05": "localhost:3101",
-    "bench06": "localhost:3101",
-    "bench07": "localhost:3101"
+    "bench01": "125.6.147.183:3101",
+    "bench02": "125.6.147.184:3101",
+    "bench03": "125.6.147.185:3101",
+    "bench04": "125.6.147.186:3101",
+    "bench05": "125.6.147.187:3101",
+    "bench06": "125.6.147.188:3101",
+    "bench07": "125.6.147.189:3101"
   },
   "teamlist": [
     "team01", "team02", "team03", "team04", "team05", "team06", "team07", "team08", "team09", "team10",
@@ -18,26 +18,26 @@
     "team21"
   ],
   "teams": {
-    "team01": {"id":"team01", "name":"team01", "pass":"", "bench":"bench01", "target":"localhost:5000"},
-    "team02": {"id":"team02", "name":"team02", "pass":"", "bench":"bench01", "target":"localhost:5000"},
-    "team03": {"id":"team03", "name":"team03", "pass":"", "bench":"bench01", "target":"localhost:5000"},
-    "team04": {"id":"team04", "name":"team04", "pass":"", "bench":"bench02", "target":"localhost:5000"},
-    "team05": {"id":"team05", "name":"team05", "pass":"", "bench":"bench02", "target":"localhost:5000"},
-    "team06": {"id":"team06", "name":"team06", "pass":"", "bench":"bench02", "target":"localhost:5000"},
-    "team07": {"id":"team07", "name":"team07", "pass":"", "bench":"bench03", "target":"localhost:5000"},
-    "team08": {"id":"team08", "name":"team08", "pass":"", "bench":"bench03", "target":"localhost:5000"},
-    "team09": {"id":"team09", "name":"team09", "pass":"", "bench":"bench03", "target":"localhost:5000"},
-    "team10": {"id":"team10", "name":"team10", "pass":"", "bench":"bench04", "target":"localhost:5000"},
-    "team11": {"id":"team11", "name":"team11", "pass":"", "bench":"bench04", "target":"localhost:5000"},
-    "team12": {"id":"team12", "name":"team12", "pass":"", "bench":"bench04", "target":"localhost:5000"},
-    "team13": {"id":"team13", "name":"team13", "pass":"", "bench":"bench05", "target":"localhost:5000"},
-    "team14": {"id":"team14", "name":"team14", "pass":"", "bench":"bench05", "target":"localhost:5000"},
-    "team15": {"id":"team15", "name":"team15", "pass":"", "bench":"bench05", "target":"localhost:5000"},
-    "team16": {"id":"team16", "name":"team16", "pass":"", "bench":"bench06", "target":"localhost:5000"},
-    "team17": {"id":"team17", "name":"team17", "pass":"", "bench":"bench06", "target":"localhost:5000"},
-    "team18": {"id":"team18", "name":"team18", "pass":"", "bench":"bench06", "target":"localhost:5000"},
-    "team19": {"id":"team19", "name":"team19", "pass":"", "bench":"bench07", "target":"localhost:5000"},
-    "team20": {"id":"team20", "name":"team20", "pass":"", "bench":"bench07", "target":"localhost:5000"},
-    "team21": {"id":"team21", "name":"team21", "pass":"", "bench":"bench07", "target":"localhost:5000"}
+    "team01": {"id":"team01", "name":"team01", "pass":"", "bench":"bench01", "target":"125.6.147.219:80"},
+    "team02": {"id":"team02", "name":"team02", "pass":"", "bench":"bench01", "target":"125.6.147.220:80"},
+    "team03": {"id":"team03", "name":"team03", "pass":"", "bench":"bench01", "target":"125.6.147.221:80"},
+    "team04": {"id":"team04", "name":"team04", "pass":"", "bench":"bench02", "target":"125.6.147.222:80"},
+    "team05": {"id":"team05", "name":"team05", "pass":"", "bench":"bench02", "target":"125.6.147.223:80"},
+    "team06": {"id":"team06", "name":"team06", "pass":"", "bench":"bench02", "target":"125.6.147.224:80"},
+    "team07": {"id":"team07", "name":"team07", "pass":"", "bench":"bench03", "target":"125.6.147.225:80"},
+    "team08": {"id":"team08", "name":"team08", "pass":"", "bench":"bench03", "target":"125.6.147.226:80"},
+    "team09": {"id":"team09", "name":"team09", "pass":"", "bench":"bench03", "target":"125.6.147.227:80"},
+    "team10": {"id":"team10", "name":"team10", "pass":"", "bench":"bench04", "target":"125.6.147.159:80"},
+    "team11": {"id":"team11", "name":"team11", "pass":"", "bench":"bench04", "target":"125.6.147.160:80"},
+    "team12": {"id":"team12", "name":"team12", "pass":"", "bench":"bench04", "target":"125.6.147.161:80"},
+    "team13": {"id":"team13", "name":"team13", "pass":"", "bench":"bench05", "target":"125.6.147.162:80"},
+    "team14": {"id":"team14", "name":"team14", "pass":"", "bench":"bench05", "target":"125.6.147.163:80"},
+    "team15": {"id":"team15", "name":"team15", "pass":"", "bench":"bench05", "target":"125.6.147.164:80"},
+    "team16": {"id":"team16", "name":"team16", "pass":"", "bench":"bench06", "target":"125.6.147.165:80"},
+    "team17": {"id":"team17", "name":"team17", "pass":"", "bench":"bench06", "target":"125.6.147.166:80"},
+    "team18": {"id":"team18", "name":"team18", "pass":"", "bench":"bench06", "target":"125.6.147.167:80"},
+    "team19": {"id":"team19", "name":"team19", "pass":"", "bench":"bench07", "target":"125.6.147.168:80"},
+    "team20": {"id":"team20", "name":"team20", "pass":"", "bench":"bench07", "target":"125.6.147.169:80"},
+    "team21": {"id":"team21", "name":"team21", "pass":"", "bench":"bench07", "target":"125.6.147.170:80"}
   }
 }  
