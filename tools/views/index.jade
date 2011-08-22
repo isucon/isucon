@@ -12,16 +12,38 @@ html
       tr.dan {height: 150px;}
       td.team {width: 250px; text-align: center; border: 1px solid;}
       table.box {width: 100%;}
-      td.name {height: 50px; text-align: center;}
+      td.name {height: 40px; text-align: center; background-color: cyan;}
       td.failing {background-color: red;}
-      td.latest {height: 50px; text-align: center;}
-      td.highest {height: 30px; text-align: center;}
+      td.latest {height: 35px; text-align: center; font-weight: bold; padding: 0; margin: 0;}
+      td.latest_at {height: 15px; text-align: center; padding: 0; margin: 0;}
+      td.highest {height: 20px; text-align: center; font-weight: bold;}
+      td.highest_at {height: 10px; text-align: center; padding: 0; margin: 0; padding: 0; margin: 0;}
       td.bench {height: 20px; text-align: center;}
       td.running {background-color: lime;}
     script(type="text/javascript", src="/js/jquery-1.6.2.min.js")
     script(type="text/javascript", src="/js/jquery-ui-1.8.14.custom.min.js")
     script(type="text/javascript", src="/js/isucon.master.js")
   body
+    #bench_start_dialog(title="start benchmark", style="display: none;")
+      form#benchstart(method="POST")
+        ul(style="list-style-type: none;")
+          li#benchstart_team start teamNN benchmark
+          li
+            | password
+            input(type="password", name="pass")
+          li
+            | start in inf-mode
+            input(type="checkbox", name="infmode")
+    #bench_stop_dialog(title="stop benchmark", style="display: none;")
+      form#benchstop(method="POST")
+        ul(style="list-style-type: none;")
+          li#benchstop_team stop teamNN benchmark
+          li
+            | password
+            input(type="password", name="pass")
+          li
+            | stop gracefully
+            input(type="checkbox", name="gracefully", checked)
     #bunner
       img(src="/images/isucon_title.jpg", width="125px", height="38px", style="border: none;")
     #scoreboard
@@ -35,10 +57,14 @@ html
                   tr
                     td.name.failing= team.name
                   tr
-                    td.latest loading...
+                    td.latest no tests runned
                   tr
-                    td.highest loading...
+                    td.latest_at at ...
                   tr
-                    td.bench.running running
+                    td.highest no tests successed
+                  tr
+                    td.highest_at at ...
+                  tr
+                    td.bench idle
     #grapharea
       | hoge

@@ -1,25 +1,27 @@
-var fs = require('fs');
+var fs = require('fs'),
+    http = require('http');
 
-var http_load = require('http_load');
-var engine = require('bench_engine.js');
+var http_load = require('http_load'),
+    engine = require('bench_engine.js');
 
-var HTTP_LOAD_PARALLEL = 5;
-var HTTP_LOAD_SECONDS = 20;//180;
-
-var COMMENT_POST_PER_MIN_MAIN = 30;
-var COMMENT_POST_PER_MIN_OPT = 10;
-
-var COMMENT_SIZE = 200;
+var HTTP_LOAD_PARALLEL = 5,
+    HTTP_LOAD_SECONDS = 20,//180,
+    COMMENT_POST_PER_MIN_MAIN = 30,
+    COMMENT_POST_PER_MIN_OPT = 10,
+    COMMENT_SIZE = 200;
 
 var COMMENT_POST_INTERVALS = Math.floor(60 * 1000 / (COMMENT_POST_PER_MIN_MAIN + COMMENT_POST_PER_MIN_OPT));
 var CHEKCER_START_DURATION = Math.floor(HTTP_LOAD_SECONDS / 3) * 1000;
 
-var config = JSON.parse(fs.readFileSync(__dirname + '/../webapp/config/hosts.json', 'utf-8'));
-var targetHost = config.servers.reverseproxy[0];
-var targetPort = config.servers.reverseproxyport || 5000; //80;
+var conf = JSON.parse(fs.readFileSync(__dirname + '/config.json', 'utf-8'));
+
+var teamid = process.argv[2],
+    target = conf.teams[teamid].target,
+    targetHost = target.split(':')[0],
+    targetPort = target.split(':')[1];
 
 var continuousMode = false;
-if (process.argv.length > 2 && process.argv[2] === 'inf') {
+if (process.argv.length > 3 && process.argv[3] === 'inf') {
   continuousMode = true;
 }
 
@@ -65,13 +67,14 @@ function load(dirpath, articleid, data){
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
     if (err) { console.log('error on http_load'); console.log(err); }
     clearInterval(posterId);
-    output(dirpath, result, checker_result);
-    if (loading && continuousMode)
-      process.nextTick(function(){
-        prepare(load);
-      });
-    else
-      process.exit(0);
+    output(dirpath, result, checker_result, function(err){
+      if (loading && continuousMode)
+        process.nextTick(function(){
+          prepare(load);
+        });
+      else
+        process.exit(0);
+    });
   });
 };
 
@@ -139,8 +142,6 @@ function checkArticle(articleid, data, callback){
     articleid = article.id;
     data = article.data;
   }
-  console.log({id: articleid, data: data});
-  console.log('---------------------------');
   engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
     if (err) {
       callback({summary:'error'});
@@ -152,14 +153,8 @@ function checkArticle(articleid, data, callback){
       checkresult.articleid = articleid;
       checkresult.postlink = ($('#view #titleimage a').attr('href') == '/post');
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
-      console.log('data' + data.title);
-      console.log('view' + $('#articleview .article .title').text());
       checkresult.title = ($('#articleview .article .title').text() == data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d$/.exec($('#articleview .article .created').text()) ? true : false);
-      console.log('=============================');
-      console.log(data.body.split('\n').join('<br>'));
-      console.log('=============================');
-      console.log($('#articleview .article .body').html().replace(/<br>$/, ''));
       checkresult.body = ($('#articleview .article .body').html().replace(/<br>$/, '') == data.body.split('\n').join('<br>'));
 
       var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);
@@ -169,9 +164,28 @@ function checkArticle(articleid, data, callback){
   });
 };
 
-function output(dirpath, result, checker_result){
-  var data = JSON.stringify({bench: result, checker: checker_result}, null, '\t') + '\n';
-  fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), data, 'utf8');
+function output(dirpath, load_result, checker_result, callback){
+  var totalresponse = Number(load_result.response.success) + Number(load_result.response.error);
+  var load_test = (Number(load_result.response.error) < totalresponse * 0.01);
+  var test = load_test && (checker_result.summary === 'success');
+  var score = Number(load_result.response.success);
+
+  var data = {teamid: teamid, resulttime: (new Date()), test:test, score:score, bench: load_result, checker: checker_result};
+  fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), JSON.stringify(data, null, '\t') + '\n', 'utf8');
+  var req = http.request({
+    host: conf.master.host.split(':')[0],
+    port: conf.master.host.split(':')[1],
+    method: 'POST',
+    path: '/result/' + teamid,
+    headers: {'Content-Type': 'application/json', 'User-Agent': 'ISUCon bench agent v1.0'}
+  }, function(res){
+    callback(null);
+  });
+  req.on('error', function(err){
+    callback(err);
+  });
+  req.write(JSON.stringify(data) + '\n');
+  req.end();
 };
 
 prepare(load);

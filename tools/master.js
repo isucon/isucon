@@ -1,16 +1,12 @@
 var express = require('express'),
     jade = require('jade'),
     mysql = require('mysql'),
+    async = require('async'),
+    fs = require('fs'),
+    http = require('http'),
     app = express.createServer();
 
-var ISUCON_TEAMS = [
-  {id:'team01',name:'team01'}, {id:'team02',name:'team02'}, {id:'team03',name:'team03'}, {id:'team04',name:'team04'},
-  {id:'team05',name:'team05'}, {id:'team06',name:'team06'}, {id:'team07',name:'team07'}, {id:'team08',name:'team08'},
-  {id:'team09',name:'team09'}, {id:'team10',name:'team10'}, {id:'team11',name:'team11'}, {id:'team12',name:'team12'},
-  {id:'team13',name:'team13'}, {id:'team14',name:'team14'}, {id:'team15',name:'team15'}, {id:'team16',name:'team16'},
-  {id:'team17',name:'team17'}, {id:'team18',name:'team18'}, {id:'team19',name:'team19'}, {id:'team20',name:'team20'},
-  {id:'team21',name:'team21'}
-];
+var conf = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 
 function error_handle(req, res, err){
   console.log(err);
@@ -20,17 +16,16 @@ function error_handle(req, res, err){
 
 function formatDate(d){
   var pad = function(n){return n < 10 ? '0' + n : n;};
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
-    + ' '
-    + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate())
+    + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
 };
 
 var dbclient = mysql.createClient({
   host: 'localhost',
   port: 3306,
-  user: 'isuconmaster',
+  user: 'isumaster',
   password: 'isunagero',
-  database: 'isuconmaster'
+  database: 'isumaster'
 });
 
 app.configure(function(){
@@ -47,39 +42,149 @@ app.configure(function(){
   app.use(app.router);
 });
 
-function IsuException(message) {
-   this.message = message;
-   this.name = "IsuException";
-};
-
 app.get('/', function(req, res){
-  res.render('index', {teams:ISUCON_TEAMS});
+  res.render('index', {teams:conf.teamlist.map(function(n){return conf.teams[n];})});
 });
 
-app.get('/status/:id', function(req, res){
-  res.send({/* team status json object */});
-});
-
-app.get('/latest/:id', function(req, res){
-  // latest result details
+app.get('/status/:teamid', function(req, res){
+  var TEAM_LATEST_RESULT = 'SELECT teamid,resulttime,test,score,bench,checker FROM results WHERE teamid=? ORDER BY resulttime DESC LIMIT 1';
+  var TEAM_HIGHEST_RESULT = 'SELECT teamid,resulttime,score,bench FROM results WHERE teamid=? AND test=1 ORDER BY score DESC LIMIT 1';
+  var teamid = req.params.teamid;
+  var bench = conf.bench[conf.teams[teamid].bench];
+  var latest = null;
+  var highest = null;
+  var running = false;
+  async.parallel([
+    function(cb){
+      dbclient.query(TEAM_LATEST_RESULT, [teamid], function(err, results){
+        if (err) { cb(err); return; }
+        if (results.length === 1)
+          latest = results[0];
+        dbclient.query(TEAM_HIGHEST_RESULT, [teamid], function(err, results){
+          if (err) { cb(err); return; }
+          if (results.length === 1)
+            highest = results[0];
+          cb(null, 1);
+        });
+      });
+    },
+    function(cb){
+      // get bench agent status...
+      http.get({
+        host: bench.split(':')[0],
+        port: bench.split(':')[1],
+        path: '/bench/check/' + teamid,
+        headers: {'User-Agent': 'ISUCon master v1.0'}
+      }, function(res){
+        if (res.statusCode === 200)
+          running = true;
+        cb(null, 1);
+      }).on('error', function(e){cb(null,1);});
+    }
+  ], function(err, returns){
+    res.send({
+      test:(latest && latest.test == 1),
+      latest:latest,
+      highest:highest,
+      running:running
+    });
+  });
 });
 
 app.get('/history', function(req, res){
-  res.send({/* team success score history json object */});
+  var HISTORY_QUERY = 'SELECT teamid,resulttime,score FROM results WHERE test=1 ORDER BY resulttime';
+  dbclient.query(HISTORY_QUERY, function(err, results){
+    res.send({history:results});
+  });
 });
 
-app.post('/result/:id', function(req, res){
-  // register result from bench tool
+// req.params.teamid , req.body
+/*
+CREATE TABLE IF NOT EXISTS isumaster.results (
+  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  teamid INT NOT NULL,
+  resulttime VARCHAR(14) NOT NULL, -- YYYYMMDDHHMMSS
+  test TINYINT NOT NULL,
+  score BIGINT DEFAULT 0,
+  bench TEXT,
+  checker TEXT,
+  INDEX (teamid, resulttime DESC),
+  INDEX (teamid, test, score DESC)
+) ENGINE=InnoDB;
+ */
+// var data = {teamid: teamid, resulttime: (new Date()), bench: result, checker: checker_result};
+app.post('/result/:teamid', function(req, res){
+  var teamid = req.params.teamid;
+  var resulttime = formatDate(new Date(req.body.resulttime));
+  var INSERT_RESULT = 'INSERT INTO results SET teamid=?,resulttime=?,test=?,score=?,bench=?,checker=?';
+  var data = [teamid,resulttime,(req.body.test ? 1 : 0),req.body.score,JSON.stringify(req.body.bench),JSON.stringify(req.body.checker)];
+  dbclient.query(INSERT_RESULT, data, function(err, results){
+    res.send({status:'ok'});
+  });
 });
 
-app.post('/bench/start/:id', function(req, res){
-  // start one-time or inf
-  // with pass
+app.post('/bench/start/:teamid', function(req, res){
+  var teamid = req.params.teamid;
+  console.log(req.body);
+  var infmode = (req.body.infmode && req.body.infmode.length > 0);
+  var pass = req.body.pass;
+  var key = conf.master.pass;
+  var bench = conf.bench[conf.teams[teamid].bench];
+  var agentReq = http.request({
+    host: bench.split(':')[0],
+    port: bench.split(':')[1],
+    method: 'POST',
+    path: '/bench/start/' + teamid,
+    headers: {'Content-Type': 'application/json', 'User-Agent': 'ISUCon master v1.0'}
+  }, function(agentRes){
+    if (agentRes.statusCode === 200)
+      res.send({status:'ok'});
+    else {
+      if (agentRes.statusCode === 400)
+        res.send({status:'already running'}, 400);
+      else if (agentRes.statusCode === 403)
+        res.send({status:'password mismatch'}, 403);
+      else
+        res.send({status:'system error'}, 500);
+    }
+  });
+  agentReq.on('error', function(err){
+    res.send({status:'bench agent error: ' + err.message}, 500);
+  });
+  agentReq.write(JSON.stringify({infmode:infmode, key:key, pass:pass}) + '\n');
+  agentReq.end();
 });
 
-app.post('/bench/stop/:id', function(req, res){
+app.post('/bench/stop/:teamid', function(req, res){
   // stop gracefully(USR1) or just now(HUP)
   // with pass
+  var teamid = req.params.teamid;
+  console.log(req.body);
+  var gracefully = (req.body.gracefully && req.body.gracefully.length > 0);
+  var pass = req.body.pass;
+  var key = conf.master.pass;
+  var bench = conf.bench[conf.teams[teamid].bench];
+  var agentReq = http.request({
+    host: bench.split(':')[0],
+    port: bench.split(':')[1],
+    method: 'POST',
+    path: '/bench/stop/' + teamid,
+    headers: {'Content-Type': 'application/json', 'User-Agent': 'ISUCon master v1.0'}
+  }, function(agentRes){
+    if (agentRes.statusCode === 200)
+      res.send({status:'ok'});
+    else {
+      if (agentRes.statusCode === 403)
+        res.send({status:'password mismatch'}, 403);
+      else
+        res.send({status:'system error'}, 500);
+    }
+  });
+  agentReq.on('error', function(err){
+    res.send({status:'bench agent error: ' + err.message}, 500);
+  });
+  agentReq.write(JSON.stringify({gracefully:gracefully, key:key, pass:pass}) + '\n');
+  agentReq.end();
 });
 
 app.listen(3080);
