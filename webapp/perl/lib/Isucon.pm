@@ -5,12 +5,24 @@ use warnings;
 use utf8;
 use Kossy;
 use DBI;
+use JSON;
 
 our $VERSION = 0.01;
 
+sub load_config {
+    my $self = shift;
+    return $self->{_config} if $self->{_config};
+    open( my $fh, '<', $self->root_dir . '/../config/hosts.json') or die $!;
+    local $/;
+    my $json = <$fh>;
+    $self->{_config} = decode_json($json);    
+}
+
 sub dbh {
     my $self = shift;
-    DBI->connect_cached('dbi:mysql:isucon;host=127.0.0.1','isucon','isucon',{
+    my $config = $self->load_config;
+    my $host = $config->{servers}->{database}->[0] || '127.0.0.1';
+    DBI->connect_cached('dbi:mysql:isucon;host='.$host,'isuconapp','isunageruna',{
         RaiseError => 1,
         PrintError => 0,
         ShowErrorStatement => 1,

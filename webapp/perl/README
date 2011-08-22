@@ -1,0 +1,8 @@
+- How to run
+
+$ curl -k -L http://cpanmin.us/ > ./cpanm
+$ chmod +x ./cpanm
+$ ./cpanm -lextlib --installdeps .
+$ perl -Mlib=extlib/lib/perl5 extlib/bin/plackup -s Starman -E production --preload-app app.psgi
+
+
