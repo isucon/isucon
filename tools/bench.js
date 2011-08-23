@@ -28,7 +28,7 @@ if (process.argv.length > 3 && process.argv[3] === 'inf') {
 function prepare(callback){
   engine.getArticle('/', targetHost, targetPort, function(err, content){
     if (err){
-      process.exit(1);
+      output(null, null, null, function(err){process.exit(1); return;});
     }
     engine.parseHtml(content, function($){
       var latestArticleURI = $('#articleview :eq(0) .articlelink a').attr('href');
@@ -40,7 +40,9 @@ function prepare(callback){
       engine.postArticle({
         hostname:targetHost, portnum:targetPort, articlesize:1000, articleid:articleId
       }, function(err, articleid, data){
-        if (err){ console.log('failed to post new article'); process.exit(1); }
+        if (err){
+          output(null, null, null, function(err){process.exit(1); return;});
+        }
         engine.generateUrlsFile(targetHost, targetPort, articleid, function(dirpath){
           callback(dirpath, articleid, data);
         });
@@ -65,7 +67,9 @@ function load(dirpath, articleid, data){
   }, COMMENT_POST_INTERVALS);
 
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
-    if (err) { console.log('error on http_load'); console.log(err); }
+    if (err) {
+      output(dirpath, {summary:'error on http_load'}, null, function(err){process.exit(1); return;});
+    }
     clearInterval(posterId);
     output(dirpath, result, checker_result, function(err){
       if (loading && continuousMode)
@@ -180,13 +184,22 @@ function checkArticle(articleid, data, callback){
 };
 
 function output(dirpath, load_result, checker_result, callback){
+  if (load_result === null)
+    load_result = {response:{success:0,error:1}, summary:'fail'};
+  if ((! load_test.response))
+    load_result.response = {success:0,error:0};
+      
+  if (checker_result === null)
+    checker_result = {summary:'init access (GET / or POST one article) failed'};
+
   var totalresponse = Number(load_result.response.success) + Number(load_result.response.error);
   var load_test = (Number(load_result.response.error) < totalresponse * 0.01);
   var test = load_test && (checker_result.summary === 'success');
   var score = Number(load_result.response.success);
 
   var data = {teamid: teamid, resulttime: (new Date()), test:test, score:score, bench: load_result, checker: checker_result};
-  fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), JSON.stringify(data, null, '\t') + '\n', 'utf8');
+  if (dirpath !== null)
+    fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), JSON.stringify(data, null, '\t') + '\n', 'utf8');
   var req = http.request({
     host: conf.master.host.split(':')[0],
     port: conf.master.host.split(':')[1],
