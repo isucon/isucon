@@ -158,11 +158,11 @@ function checkArticle(articleid, data, callback){
       //check of dom
       var checkresult = {};
       checkresult.articleid = articleid;
-      checkresult.postlink = ($('#view #titleimage a').attr('href') == '/post');
+      checkresult.postlink = (/^(http:\/\/[-.a-zA-Z0-9]+(:\d+)?)?\/post$/.exec($('#view #titleimage a').attr('href')) ? true : false);
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
       checkresult.title = ($('#articleview .article .title').text() == data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d( \+0900)?$/.exec($('#articleview .article .created').text()) ? true : false);
-      checkresult.body = ($('#articleview .article .body').html().replace(/<br>$/, '') == data.body.split('\n').join('<br>'));
+      checkresult.body = ($('#articleview .article .body').html().replace(/<br ?\/?>$/, '') == data.body.split('\n').join('<br>'));
 
       var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);
       checkresult.summary = (summary ? 'success' : 'fail');
