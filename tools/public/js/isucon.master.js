@@ -65,7 +65,7 @@ function update_team_status(teamid){
       teamName.addClass('failing');
 
     if (data.latest === null) {
-      latest.text('no tests runned');
+      latest.text('no tests ran');
       latestAt.text('at ...');
     }
     else if (data.latest.test) {
