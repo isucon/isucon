@@ -162,9 +162,11 @@ function checkArticle(articleid, data, callback){
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
       checkresult.title = ($('#articleview .article .title').text() == data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d( \+0900)?$/.exec($('#articleview .article .created').text()) ? true : false);
-      var gotbodylines = $('#articleview .article .body').html().split(/<br ?\/?>/i);
+      var gotbodylines = $('#articleview .article .body').html().split(/<br ?\/?>\n?/i);
       if (gotbodylines[gotbodylines.length - 1].length < 1)
         gotbodylines.pop();
+      if (gotbodylines[0].substring(0,1) === '\n')
+        gotbodylines[0] = gotbodylines[0].substring(1);
       var originallines = data.body.split('\n');
       if (originallines[originallines.length - 1].length < 1)
         originallines.pop();
