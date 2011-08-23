@@ -113,6 +113,10 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
               var gotlines = c.children('.body').html().split('<br ?/?>');
               if (gotlines[gotlines.length - 1].length < 1)
                 gotlines.pop();
+              console.log('============= check original ==============');
+              console.log(bodyText);
+              console.log('============= comment from app ==============');
+              console.log(gotlines.join('\n');
               if (bodyText === gotlines.join('\n'))
                 success = true;
             }
