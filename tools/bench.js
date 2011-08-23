@@ -116,7 +116,7 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
               console.log('============= check original ==============');
               console.log(bodyText);
               console.log('============= comment from app ==============');
-              console.log(gotlines.join('\n');
+              console.log(gotlines.join('\n'));
               if (bodyText === gotlines.join('\n'))
                 success = true;
             }
