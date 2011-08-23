@@ -165,7 +165,10 @@ function checkArticle(articleid, data, callback){
       var gotbodylines = $('#articleview .article .body').html().split(/<br ?\/?>/i);
       if (gotbodylines[gotbodylines.length - 1].length < 1)
         gotbodylines.pop();
-      checkresult.body = (gotbodylines.join('\n') == data.body);
+      var originallines = data.body.split('\n');
+      if (originallines[originallines.length - 1].length < 1)
+        originallines.pop();
+      checkresult.body = (gotbodylines.join('\n') == originallines.join('\n'));
 
       var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);
       checkresult.summary = (summary ? 'success' : 'fail');
