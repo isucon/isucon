@@ -96,9 +96,15 @@ var postArticle = exports.postArticle = function(options, callback){
   var portnum = options.portnum;
 
   var formdata = {title:randomString(20).split('\n').join(''), body:randomString(articlesize)};
+  var postdata = generateFormBody(formdata);
+  var dataLength = (new Buffer(postdata, 'utf8')).length;
   var req = http.request({
     host: hostname, port: portnum, method:'POST', path:'/post',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'ISUCon bench agent v1.0'}
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': dataLength,
+      'User-Agent': 'ISUCon bench agent v1.0'
+    }
   }, function(res){
     if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
       callback(null, articleid, formdata);
@@ -109,8 +115,7 @@ var postArticle = exports.postArticle = function(options, callback){
   req.on('error',function(err){
     callback({message:'error in http.request', error:err});
   });
-  req.write(generateFormBody(formdata));
-  req.end();
+  req.end(postdata);
 };
 
 var postComment = exports.postComment = function(options, callback){
@@ -121,9 +126,15 @@ var postComment = exports.postComment = function(options, callback){
 
   var commentname = (Math.random() * 2 > 1) ? randomString(5) : '';
   var commentbody = randomString(commentsize);
+  var postdata = generateFormBody({name: commentname, body: commentbody});
+  var dataLength = (new Buffer(postdata, 'utf8')).length;
   var req = http.request({
     host: hostname, port: portnum, method: 'POST', path: '/comment/' + articleid,
-    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'ISUCon bench agent v1.0'}
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': dataLength,
+      'User-Agent': 'ISUCon bench agent v1.0'
+    }
   }, function(res){
     if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
       callback(null, commentname, commentbody);
@@ -132,8 +143,7 @@ var postComment = exports.postComment = function(options, callback){
     }
   });
   req.on('error', function(err){ callback({message:'error in http.request for comment', error: err}); });
-  req.write(generateFormBody({name: commentname, body: commentbody}));
-  req.end();
+  req.end(postdata);
 };
 
 var indexList = [
