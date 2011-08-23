@@ -102,12 +102,19 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
 
         engine.parseHtml(content, function($){
           var nameLabel = (name.length < 1 ? '名無しさん' : name);
-          var bodyHtml = body.split('\n').join('<br>');
+          var bodylines = body.split('\n');
+          if (bodylines[bodylines.length - 1].length < 1)
+            bodylines.pop();
+          var bodyText = body.join('\n');
           var success = false;
           $('.comment').each(function(index, element){
             var c = $(element);
-            if (c.children('.name').text() == nameLabel && c.children('.body').html().replace('<br>$') == bodyHtml) {
-              success = true;
+            if (c.children('.name').text() == nameLabel){
+              var gotlines = c.children('.body').html().split('<br ?/?>');
+              if (gotlines[gotlines.length - 1].length < 1)
+                gotlines.pop();
+              if (bodyText === gotlines.join('\n'))
+                success = true;
             }
           });
           callback(success);
