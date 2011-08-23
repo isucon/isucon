@@ -98,21 +98,6 @@ app.get('/history', function(req, res){
   });
 });
 
-// req.params.teamid , req.body
-/*
-CREATE TABLE IF NOT EXISTS isumaster.results (
-  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  teamid INT NOT NULL,
-  resulttime VARCHAR(14) NOT NULL, -- YYYYMMDDHHMMSS
-  test TINYINT NOT NULL,
-  score BIGINT DEFAULT 0,
-  bench TEXT,
-  checker TEXT,
-  INDEX (teamid, resulttime DESC),
-  INDEX (teamid, test, score DESC)
-) ENGINE=InnoDB;
- */
-// var data = {teamid: teamid, resulttime: (new Date()), bench: result, checker: checker_result};
 app.post('/result/:teamid', function(req, res){
   var teamid = req.params.teamid;
   var resulttime = formatDate(new Date(req.body.resulttime));
@@ -120,6 +105,36 @@ app.post('/result/:teamid', function(req, res){
   var data = [teamid,resulttime,(req.body.test ? 1 : 0),req.body.score,JSON.stringify(req.body.bench),JSON.stringify(req.body.checker)];
   dbclient.query(INSERT_RESULT, data, function(err, results){
     res.send({status:'ok'});
+  });
+});
+
+var redraw_json = function(json){
+  return JSON.stringify(JSON.parse(json), null, '    ');
+};
+
+app.get('/latest/:teamid', function(req, res){
+  var TEAM_LATEST_RESULT = 'SELECT bench,checker FROM results WHERE teamid=? ORDER BY resulttime DESC LIMIT 1';
+  var teamid = req.params.teamid;
+  dbclient.query(TEAM_LATEST_RESULT, [teamid], function(err, results){
+    if (err) { error_handle(req, res, err); return; }
+    if (results.length < 1) {
+      res.send({bench:null, checker:null}); return;
+    }
+    var result = results[0];
+    res.send({bench:redraw_json(result.bench), checker:redraw_json(result.checker)});
+  });
+});
+
+app.get('/highest/:teamid', function(req, res){
+  var TEAM_HIGHEST_RESULT = 'SELECT bench,checker FROM results WHERE teamid=? AND test=1 ORDER BY score DESC LIMIT 1';
+  var teamid = req.params.teamid;
+  dbclient.query(TEAM_HIGHEST_RESULT, [teamid], function(err, results){
+    if (err) { error_handle(req, res, err); return; }
+    if (results.length < 1) {
+      res.send({bench:null, checker:null}); return;
+    }
+    var result = results[0];
+    res.send({bench:redraw_json(result.bench), checker:redraw_json(result.checker)});
   });
 });
 

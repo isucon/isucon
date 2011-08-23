@@ -27,6 +27,12 @@ $(function(){
     MY_TEAM = $(event.target).closest('td.team').attr('id');
     alert('set ' + MY_TEAM + ' to update frequently');
   });
+  $('td.latest').click(function(event){
+    show_latest_result_detail($(event.target).closest('td.team').attr('id'));
+  });
+  $('td.highest').click(function(event){
+    show_highest_result_detail($(event.target).closest('td.team').attr('id'));
+  });
   $('td.bench').click(function(event){
     show_start_bench_dialog($(event.target).closest('td.team').attr('id'));
   });
@@ -94,6 +100,46 @@ function update_team_status(teamid){
         show_start_bench_dialog($(event.target).closest('td.team').attr('id'));
       });
     }
+  });
+};
+
+function show_latest_result_detail(teamid){
+  if (! (/^team\d+$/.exec(teamid)))
+    return;
+  $.get('/latest/' + teamid, function(data){
+    var dialogbox = $('#result_display_dialog');
+    dialogbox.dialog({
+      autoOpen: false,
+      hight: 500,
+      width: 800,
+      modal: true,
+      buttons: {'OK': function(){dialogbox.dialog('close');}}
+    });
+    $('div#benchkind').text('latest benchmark');
+    $('pre#benchdetail').text(data.bench);
+    $('div#checkerkind').text('checker');
+    $('pre#checkerdetail').text(data.checker);
+    dialogbox.dialog('open');
+  });
+};
+
+function show_highest_result_detail(teamid){
+  if (! (/^team\d+$/.exec(teamid)))
+    return;
+  $.get('/highest/' + teamid, function(data){
+    var dialogbox = $('#result_display_dialog');
+    dialogbox.dialog({
+      autoOpen: false,
+      hight: 500,
+      width: 800,
+      modal: true,
+      buttons: {'OK': function(){dialogbox.dialog('close');}}
+    });
+    $('div#benchkind').text('best benchmark');
+    $('pre#benchdetail').text(data.bench);
+    $('div#checkerkind').text('checker');
+    $('pre#checkerdetail').text(data.checker);
+    dialogbox.dialog('open');
   });
 };
 
