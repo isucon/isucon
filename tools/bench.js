@@ -162,7 +162,7 @@ function checkArticle(articleid, data, callback){
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
       checkresult.title = ($('#articleview .article .title').text() == data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d( \+0900)?$/.exec($('#articleview .article .created').text()) ? true : false);
-      checkresult.body = ($('#articleview .article .body').html().replace(/<br ?\/?>$/, '') == data.body.split('\n').join('<br>'));
+      checkresult.body = ($('#articleview .article .body').html().replace(/<br ?\/?>$/, '').replace(/<br ?\/?>/, '<br>') == data.body.split('\n').join('<br>'));
 
       var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);
       checkresult.summary = (summary ? 'success' : 'fail');
