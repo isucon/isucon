@@ -184,9 +184,9 @@ function checkArticle(articleid, data, callback){
 };
 
 function output(dirpath, load_result, checker_result, callback){
-  if (load_result === null)
+  if (! load_result)
     load_result = {response:{success:0,error:1}, summary:'fail'};
-  if ((! load_test.response))
+  if (! load_result.response)
     load_result.response = {success:0,error:0};
       
   if (checker_result === null)
