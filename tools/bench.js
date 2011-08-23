@@ -110,7 +110,7 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
           $('.comment').each(function(index, element){
             var c = $(element);
             if (c.children('.name').text() == nameLabel){
-              var gotlines = c.children('.body').html().split('<br ?/?>');
+              var gotlines = c.children('.body').html().split('\n').join('').split('<br ?/?>');
               if (gotlines[gotlines.length - 1].length < 1)
                 gotlines.pop();
               if (bodyText === gotlines.join('\n'))
@@ -162,7 +162,7 @@ function checkArticle(articleid, data, callback){
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
       checkresult.title = ($('#articleview .article .title').text() == data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d( \+0900)?$/.exec($('#articleview .article .created').text()) ? true : false);
-      var gotbodylines = $('#articleview .article .body').html().split(/<br ?\/?>\n?/i);
+      var gotbodylines = $('#articleview .article .body').html().split('\n').join('').split(/<br ?\/?>\n?/i);
       if (gotbodylines[gotbodylines.length - 1].length < 1)
         gotbodylines.pop();
       if (gotbodylines[0].substring(0,1) === '\n')
