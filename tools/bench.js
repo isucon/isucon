@@ -123,7 +123,7 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
             if (success) return;
             var c = $(element);
             if (c.children('.name').text() == nameLabel){
-              var gotlines = c.children('.body').html().split('\n').join('').split('<br ?/?>');
+              var gotlines = c.children('.body').html().split('\n').join('').split(/<br ?\/?>/i);
               while (gotlines[gotlines.length - 1].length < 1)
                 gotlines.pop();
               if (bodyText === gotlines.join('\n'))
