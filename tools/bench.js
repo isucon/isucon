@@ -58,12 +58,20 @@ process.on('SIGUSR1', function(){
 
 function load(dirpath, articleid, data){
   var checker_result = null;
-  var poster_result = null;
+  var poster_result = null; // null(failed) or {summary:'failed'} or {summary:'success'}
 
   setTimeout(function(){checker(articleid, data, function(r){checker_result = r;});}, CHEKCER_START_DURATION);
 
   var posterId = setInterval(function(){
-    commentposter(articleid, function(r){poster_result = (poster_result && r);});
+    commentposter(articleid, function(r){
+      if (poster_result === null || (poster_result.summary === 'success' && r.summary !== 'success'))
+        poster_result = r;
+      else if (poster_result.summary === 'failed' && r.summary === 'failed') {
+        if (! poster_result.reason)
+          poster_result.reason = [];
+        poster_result.reason = poster_result.reason.concat(r.reason);
+      }
+    });
   }, COMMENT_POST_INTERVALS);
 
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
@@ -122,7 +130,10 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
                 success = true;
             }
           });
-          callback(success);
+          if (success)
+            callback({summary:'success'});
+          else
+            callback({summary:'failed', reason:['comment not found, name:' + nameLabel + ', body:' + bodyText]});
         });
       });
     }, 1000);
@@ -162,10 +173,13 @@ function checkArticle(articleid, data, callback){
     engine.parseHtml(content, function($){
       //check of dom
       var checkresult = {};
+      var failed_reasons = [];
       checkresult.articleid = articleid;
       checkresult.postlink = (/^(http:\/\/[-.a-zA-Z0-9]+(:\d+)?)?\/post$/.exec($('#view #titleimage a').attr('href')) ? true : false);
       checkresult.latestcomments = ($('#mainview #sidebar table tr td').eq(0).text() == '新着コメントエントリ');
       checkresult.title = ($('#articleview .article .title').text() == data.title);
+      if (! checkresult.title)
+        failed_reasons.push('title mismatch, original:' + data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d( \+0900)?$/.exec($('#articleview .article .created').text()) ? true : false);
       var gotbodylines = $('#articleview .article .body').html().split('\n').join('').split(/<br ?\/?>\n?/i);
       if (gotbodylines[gotbodylines.length - 1].length < 1)
@@ -176,9 +190,13 @@ function checkArticle(articleid, data, callback){
       if (originallines[originallines.length - 1].length < 1)
         originallines.pop();
       checkresult.body = (gotbodylines.join('\n') == originallines.join('\n'));
+      if (! checkresult.body)
+        failed_reasons.push('article body mismatch, original:' + originallines.join('\n'));
 
       var summary = (checkresult.postlink && checkresult.latestcomments && checkresult.title && checkresult.created && checkresult.body);
       checkresult.summary = (summary ? 'success' : 'fail');
+      if (failed_reasons.length > 0)
+        checkresult.reason = failed_reasons;
       callback(checkresult);
     });
   });
