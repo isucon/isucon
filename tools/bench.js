@@ -124,6 +124,8 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
             var c = $(element);
             if (c.children('.name').text() == nameLabel){
               var gotlines = c.children('.body').html().split('\n').join('').split(/<br ?\/?>/i);
+              if (gotlines[0].substring(0,1) === '\n')
+                gotlines[0] = gotlines[0].substring(1);
               while (gotlines[gotlines.length - 1].length < 1)
                 gotlines.pop();
               if (bodyText === gotlines.join('\n'))
@@ -133,7 +135,7 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
           if (success)
             callback({summary:'success'});
           else
-            callback({summary:'failed', reason:['comment not found, name:' + nameLabel + ', body:' + bodyText]});
+            callback({summary:'failed', reason:['target /article/' + articleid + ', comment not found, name:' + nameLabel + ', body:' + bodyText]});
         });
       });
     }, 1000);
