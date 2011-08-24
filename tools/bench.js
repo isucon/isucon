@@ -105,12 +105,12 @@ function commentposter(maxArticleId, callback){
 function postCommentAndCheck(articleid, size, checkContent, callback){
   var spec = {articleid: articleid, size: size, hostname: targetHost, portnum: targetPort};
   engine.postComment(spec, function(err, name, body){
-    if (err) { callback(false); return; }
-    if (! checkContent) { callback(true); return; }
+    if (err) { callback({summary:'failed', reason:['POST request failed']}); return; }
+    if (! checkContent) { callback({summary:'success'}); return; }
 
     setTimeout(function(){
       engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
-        if (err) { callback(false); return; }
+        if (err) { callback({summary:'failed', reason:['GET request failed after comment posted']}); return; }
 
         engine.parseHtml(content, function($){
           var nameLabel = (name.length < 1 ? '名無しさん' : name);
