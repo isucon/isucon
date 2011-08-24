@@ -103,7 +103,7 @@ var postArticle = exports.postArticle = function(options, callback){
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Content-Length': dataLength,
-      'User-Agent': 'ISUCon bench agent v1.0'
+      'User-Agent': 'http_load 12mar2006'
     }
   }, function(res){
     if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
@@ -133,7 +133,7 @@ var postComment = exports.postComment = function(options, callback){
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Content-Length': dataLength,
-      'User-Agent': 'ISUCon bench agent v1.0'
+      'User-Agent': 'http_load 12mar2006'
     }
   }, function(res){
     if (res.statusCode == 200 || (res.statusCode >= 300 && res.statusCode <= 399))
