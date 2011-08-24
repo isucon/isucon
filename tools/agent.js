@@ -69,7 +69,7 @@ app.post('/bench/stop/:teamid', function(req, res){
   if (conf.master.pass === key && conf.teams[teamid].pass === pass) {
     if (executings[teamid]) {
       if (gracefully)
-        executings[teamid].kill('SIGUSER1');
+        executings[teamid].kill('SIGUSR1');
       else
         executings[teamid].kill('SIGHUP');
       res.send('ok');
