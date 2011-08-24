@@ -16,7 +16,7 @@
 
 : for $comments -> $comment {
 <div class="comment">
-<div class="name"><: $comment.name :></div>
+<div class="name"><: $comment.name.length() > 0 ? $comment.name : "名無しさん" :></div>
 <div class="created"><: $comment.created_at :></div>
 <div class="body">
 : for $comment.body.split("\n") -> $line {
