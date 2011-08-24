@@ -28,7 +28,7 @@ if (process.argv.length > 3 && process.argv[3] === 'inf') {
 function prepare(callback){
   engine.getArticle('/', targetHost, targetPort, function(err, content){
     if (err){
-      output(null, null, null, function(err){process.exit(1); return;});
+      output(null, null, null, null, function(err){process.exit(1); return;});
     }
     engine.parseHtml(content, function($){
       var latestArticleURI = $('#articleview :eq(0) .articlelink a').attr('href');
@@ -41,7 +41,7 @@ function prepare(callback){
         hostname:targetHost, portnum:targetPort, articlesize:1000, articleid:articleId
       }, function(err, articleid, data){
         if (err){
-          output(null, null, null, function(err){process.exit(1); return;});
+          output(null, null, null, null, function(err){process.exit(1); return;});
         }
         engine.generateUrlsFile(targetHost, targetPort, articleid, function(dirpath){
           callback(dirpath, articleid, data);
@@ -68,10 +68,10 @@ function load(dirpath, articleid, data){
 
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
     if (err) {
-      output(dirpath, {summary:'error on http_load'}, null, function(err){process.exit(1); return;});
+      output(dirpath, {summary:'error on http_load'}, null, null, function(err){process.exit(1); return;});
     }
     clearInterval(posterId);
-    output(dirpath, result, checker_result, function(err){
+    output(dirpath, result, checker_result, poster_result, function(err){
       if (loading && continuousMode)
         process.nextTick(function(){
           prepare(load);
@@ -107,15 +107,16 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
         engine.parseHtml(content, function($){
           var nameLabel = (name.length < 1 ? '名無しさん' : name);
           var bodylines = body.split('\n');
-          if (bodylines[bodylines.length - 1].length < 1)
+          while (bodylines[bodylines.length - 1].length < 1)
             bodylines.pop();
-          var bodyText = body.join('\n');
+          var bodyText = bodylines.join('\n');
           var success = false;
           $('.comment').each(function(index, element){
+            if (success) return;
             var c = $(element);
             if (c.children('.name').text() == nameLabel){
               var gotlines = c.children('.body').html().split('\n').join('').split('<br ?/?>');
-              if (gotlines[gotlines.length - 1].length < 1)
+              while (gotlines[gotlines.length - 1].length < 1)
                 gotlines.pop();
               if (bodyText === gotlines.join('\n'))
                 success = true;
@@ -183,7 +184,7 @@ function checkArticle(articleid, data, callback){
   });
 };
 
-function output(dirpath, load_result, checker_result, callback){
+function output(dirpath, load_result, checker_result, poster_result, callback){
   if (! load_result)
     load_result = {response:{success:0,error:1}, summary:'fail'};
   if (! load_result.response)
@@ -191,13 +192,22 @@ function output(dirpath, load_result, checker_result, callback){
       
   if (checker_result === null)
     checker_result = {summary:'init access (GET / or POST one article) failed'};
+  if (poster_result === null)
+    poster_result = {summary:'not run'};
 
   var totalresponse = Number(load_result.response.success) + Number(load_result.response.error);
   var load_test = (Number(load_result.response.error) < totalresponse * 0.01);
-  var test = load_test && (checker_result.summary === 'success');
+  var test = load_test && (checker_result.summary === 'success') && (poster_result.summary === 'success');
   var score = Number(load_result.response.success);
 
-  var data = {teamid: teamid, resulttime: (new Date()), test:test, score:score, bench: load_result, checker: checker_result};
+  var data = {
+    teamid: teamid,
+    resulttime: (new Date()),
+    test:test,
+    score:score,
+    bench: load_result,
+    checker: {checker:checker_result, poster:poster_result}
+  };
   if (dirpath !== null)
     fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), JSON.stringify(data, null, '\t') + '\n', 'utf8');
   var req = http.request({
