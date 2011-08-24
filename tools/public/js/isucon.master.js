@@ -217,7 +217,7 @@ function exec_start_bench(teamid, pass, infmode, callback){
 function exec_stop_bench(teamid, pass, gracefully, callback){
   $.ajax({
     url: '/bench/stop/' + teamid,
-    method: 'POST',
+    type: 'POST',
     data: {pass:pass,gracefully:gracefully},
     success: function(data, textStatus, jqXHR){
       callback();
