@@ -2,7 +2,7 @@
 
 require 'sinatra/base'
 require 'haml'
-require 'mysql'
+require 'mysql2'
 
 require 'json'
 
@@ -11,28 +11,31 @@ File.open(File.dirname(__FILE__) + '/../config/hosts.json'){|f| $config = JSON.p
 module Sinatra
   module ISUConHelper
     def connection
-      return @handler if @handler
-      @handler = Mysql.connect($config['servers']['database'].first, 'isuconapp', 'isunageruna', 'isucon', 3306)
-      @handler.charset = 'utf8'
-      @handler
+      return @client if @client
+      @client = Mysql2::Client.new(:host => $config['servers']['database'].first,
+                                   :port => 3306,
+                                   :username => 'isuconapp',
+                                   :password => 'isunageruna',
+                                   :database => 'isucon')
+      @client
     end
 
-    def execute(sql, *params)
+    def sql_escape(x)
+      connection.escape(x)
+    end
+
+    def execute(sql)
       st = connection.prepare(sql)
       st.execute(*params)
       st.free_result()
       nil
     end
 
-    def execute_fetch_hash_all(sql, *params)
-      st = connection.prepare(sql)
-      st.execute(*params)
+    def execute_fetch_hash_all(sql)
       results = []
-      fieldnames = st.result_metadata.fetch_fields().map{|f| f.name.to_sym}
-      st.each do |values|
-        results.push(Hash[*[fieldnames,values].transpose.flatten])
+      connection.query(sql).each do |r|
+        results.push(Hash[r.map{|k,v| [k.to_sym, v]}])
       end
-      st.free_result()
       results
     end
 
@@ -67,30 +70,32 @@ class ISUConApplication < Sinatra::Base
   end
 
   post '/post' do 
-    title = request.params['title']
-    body = request.params['body']
-    article_post_query = 'INSERT INTO article SET title=?, body=?'
-    execute(article_post_query, title, body)
+    title = sql_escape(request.params['title'])
+    body = sql_escape(request.params['body'])
+    article_post_query = "INSERT INTO article SET title='#{title}', body='#{body}'"
+    execute(article_post_query)
     redirect '/'
   end
 
   get '/article/:articleid' do
     load_sidebar_data!
-    article_query = 'SELECT id,title,body,created_at FROM article WHERE id=?';
-    results = execute_fetch_hash_all(article_query, params[:articleid])
+    article_id = sql_escape(params[:articleid])
+    article_query = "SELECT id,title,body,created_at FROM article WHERE id='#{article_id}'";
+    results = execute_fetch_hash_all(article_query)
     halt 404 if results.size != 1
     article = results.first
-    comments_query = 'SELECT name,body,created_at FROM comment WHERE article=? ORDER BY id';
-    comments = execute_fetch_hash_all(comments_query, article[:id])
+    comments_query = "SELECT name,body,created_at FROM comment WHERE article='#{article_id}' ORDER BY id";
+    comments = execute_fetch_hash_all(comments_query)
     haml :article, :locals => {:article => article, :comments => comments}
   end
 
   post '/comment/:articleid' do 
-    name = request.params['name']
-    body = request.params['body']
-    comment_post_query = 'INSERT INTO comment SET article=?, name=?, body=?';
-    execute(comment_post_query, params[:articleid], name, body)
-    redirect '/article/' + params[:articleid].to_s
+    article_id = params[:articleid]
+    name = sql_escape(request.params['name'])
+    body = sql_escape(request.params['body'])
+    comment_post_query = "INSERT INTO comment SET article=#{article_id.to_i}, name='#{name}', body='#{body}'";
+    execute(comment_post_query, params[:articleid])
+    redirect '/article/' + article_id.to_s
   end
 end
 
