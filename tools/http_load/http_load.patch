@@ -1,0 +1,17 @@
+--- http_load-12mar2006.orig/http_load.c	2006-03-13 04:17:03.000000000 +0900
++++ http_load-12mar2006/http_load.c	2011-08-25 18:57:39.000000000 +0900
+@@ -1026,6 +1026,14 @@
+ 	urls[url_num].hostname );
+     bytes += snprintf(
+ 	&buf[bytes], sizeof(buf) - bytes, "User-Agent: %s\r\n", VERSION );
++    if (  (unsigned long) random() % 100 >= 95 ) {
++        bytes += snprintf(
++	    &buf[bytes], sizeof(buf) - bytes, "Connection: Keep-Alive\r\n" );
++    }
++    if (  (unsigned long) random() % 100 > 10 ) {
++        bytes += snprintf(
++	    &buf[bytes], sizeof(buf) - bytes, "Accept-Encoding: gzip, deflate\r\n" );
++    }
+     bytes += snprintf( &buf[bytes], sizeof(buf) - bytes, "\r\n" );
+ 
+     /* Send the request. */
