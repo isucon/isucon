@@ -16,7 +16,9 @@ module Sinatra
                                    :port => 3306,
                                    :username => 'isuconapp',
                                    :password => 'isunageruna',
-                                   :database => 'isucon')
+                                   :database => 'isucon',
+                                   :recoonect => true
+                                   )
       @client
     end
 
