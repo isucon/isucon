@@ -1,17 +1,50 @@
 --- http_load-12mar2006.orig/http_load.c	2006-03-13 04:17:03.000000000 +0900
-+++ http_load-12mar2006/http_load.c	2011-08-25 18:57:39.000000000 +0900
-@@ -1026,6 +1026,14 @@
- 	urls[url_num].hostname );
++++ http_load-12mar2006/http_load.c	2011-08-25 23:56:28.000000000 +0900
+@@ -1019,13 +1019,25 @@
+ 	}
+     else
+ 	bytes = snprintf(
+-	    buf, sizeof(buf), "GET %.500s HTTP/1.0\r\n",
++	    buf, sizeof(buf), "GET %.500s HTTP/1.1\r\n",
+ 	    urls[url_num].filename );
      bytes += snprintf(
- 	&buf[bytes], sizeof(buf) - bytes, "User-Agent: %s\r\n", VERSION );
-+    if (  (unsigned long) random() % 100 >= 95 ) {
++	&buf[bytes], sizeof(buf) - bytes, "User-Agent: %s\r\n", VERSION );
++    bytes += snprintf(
+ 	&buf[bytes], sizeof(buf) - bytes, "Host: %s\r\n",
+ 	urls[url_num].hostname );
+-    bytes += snprintf(
+-	&buf[bytes], sizeof(buf) - bytes, "User-Agent: %s\r\n", VERSION );
++    if (  (unsigned long) random() % 100 >= 97 ) {
 +        bytes += snprintf(
-+	    &buf[bytes], sizeof(buf) - bytes, "Connection: Keep-Alive\r\n" );
++	    &buf[bytes], sizeof(buf) - bytes, "Connection: keep-alive\r\n" );
 +    }
-+    if (  (unsigned long) random() % 100 > 10 ) {
++    else {
++        bytes += snprintf(
++	    &buf[bytes], sizeof(buf) - bytes, "Connection: close\r\n" );
++    }
++    if (  (unsigned long) random() % 100 > 30 ) {
 +        bytes += snprintf(
 +	    &buf[bytes], sizeof(buf) - bytes, "Accept-Encoding: gzip, deflate\r\n" );
 +    }
      bytes += snprintf( &buf[bytes], sizeof(buf) - bytes, "\r\n" );
  
      /* Send the request. */
+@@ -1682,6 +1694,7 @@
+ 	++http_status_counts[connections[cnum].http_status];
+ 
+     url_num = connections[cnum].url_num;
++/*
+     if ( do_checksum )
+ 	{
+ 	if ( ! urls[url_num].got_checksum )
+@@ -1716,9 +1729,9 @@
+ 		}
+ 	    }
+ 	}
++*/
+     }
+ 
+-
+ static void
+ progress_report( ClientData client_data, struct timeval* nowP )
+     {

@@ -2,12 +2,10 @@
 
 use strict;
 use warnings;
-require LWP::Protocol::http10;
-LWP::Protocol::implementor('http', 'LWP::Protocol::http10');
-use LWP::UserAgent;
 use List::Util qw/shuffle/;
 use Digest::MD5;
 use JSON;
+use Furl;
 
 my @urls = map { ([@{$_},0],[@{$_},1] )  } (
   ['/css/jquery-ui-1.8.14.custom.css','842e5fa9a9e51ccd3941cf41431953a7'],
@@ -25,25 +23,22 @@ if (!$base_url) {
 }
 
 $base_url =~ s!/$!!;
-my $ua = LWP::UserAgent->new(
-    agent => 'http_load 12mar2006',
-    timeout => 5
-);
 
 my %error;
 for my $url ( shuffle @urls )  {
+    my $furl = Furl->new(
+        connection_header => "close",
+        agent => 'http_load 12mar2006',
+    );
     my @header;
     push @header, 'Accept-Encoding', 'gzip, deflate' if $url->[2];
-    my $req = HTTP::Request->new(
-        GET => $base_url.$url->[0],
-        \@header
-    );
-    my $res = $ua->simple_request($req);
+    my $res = $furl->get( $base_url.$url->[0], \@header );
     if ( $res->code != 200 ) {
         $error{$url->[0]} = $res->status_line;
         next;
     }
-    if ( Digest::MD5::md5_hex($res->decoded_content) ne $url->[1] ) {
+    my $body =  $res->content;
+    if ( Digest::MD5::md5_hex($body) ne $url->[1] ) {
         $error{$url->[0]} = 'checksum not much';
     }
 }
