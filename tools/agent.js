@@ -3,6 +3,7 @@ var express = require('express'),
     mysql = require('mysql'),
     async = require('async'),
     fs = require('fs'),
+    http = require('http'),
     child = require('child_process'),
     app = express.createServer();
 
@@ -51,6 +52,17 @@ app.post('/bench/start/:teamid', function(req, res){
       var benchCmd = __dirname + '/etc/bench.sh ' + teamid + (infmode ? ' inf' : '');
       executings[teamid] = child.exec(benchCmd, function(err, stdout, stderr){
         delete executings[teamid];
+        if (stdout.length > 0 || stderr.length > 0) {
+          var req = http.request({
+            host: conf.master.host.split(':')[0],
+            port: conf.master.host.split(':')[1],
+            method: 'POST',
+            path: '/result/' + teamid
+          }, function(res){
+            // nothing to do.
+          });
+          req.end(JSON.stringify({resulttime:(new Date()), test:false, score:0, bench:{bench_output:stdout}, checker:{bench_err:stderr}}));
+        }
       });
       res.send('ok');
     }
