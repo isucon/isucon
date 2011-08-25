@@ -26,7 +26,7 @@ if (process.argv.length > 3 && process.argv[3] === 'inf') {
 }
 
 function isValidHtml(content){
-  return content.indexOf('<html>') > -1 && content.indexOf('</html>');
+  return content.indexOf('<html>') > -1 && content.indexOf('</html>') > -1;
 };
 
 function prepare(callback){
