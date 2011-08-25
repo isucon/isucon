@@ -15,7 +15,7 @@ requires 'Text::Xslate', 1.1003;
 requires 'Text::Xslate::Bridge::TT2Like';
 requires 'Try::Tiny', 0.09;
 requires 'Class::Accessor::Lite';
-requires 'DBI';
+requires 'DBI', 1.616;
 requires 'DBD::mysql';
 requires 'JSON';
 
