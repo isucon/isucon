@@ -94,7 +94,7 @@ class ISUConApplication < Sinatra::Base
     name = sql_escape(request.params['name'])
     body = sql_escape(request.params['body'])
     comment_post_query = "INSERT INTO comment SET article=#{article_id.to_i}, name='#{name}', body='#{body}'";
-    execute(comment_post_query, params[:articleid])
+    execute(comment_post_query)
     redirect '/article/' + article_id.to_s
   end
 end
