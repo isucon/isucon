@@ -8,18 +8,16 @@ require 'json'
 
 File.open(File.dirname(__FILE__) + '/../config/hosts.json'){|f| $config = JSON.parse(f.read)}
 
-$client = Mysql2::Client.new(:host => $config['servers']['database'].first,
-                             :port => 3306,
-                             :username => 'isuconapp',
-                             :password => 'isunageruna',
-                             :database => 'isucon',
-                             :recoonect => true
-                             )
-
 module Sinatra
   module ISUConHelper
     def connection
-      $client
+      Mysql2::Client.new(
+                         :host => $config['servers']['database'].first,
+                         :port => 3306,
+                         :username => 'isuconapp',
+                         :password => 'isunageruna',
+                         :database => 'isucon',
+                         )
     end
 
     def sql_escape(x)
