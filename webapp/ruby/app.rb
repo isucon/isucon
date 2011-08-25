@@ -25,10 +25,7 @@ module Sinatra
     end
 
     def execute(sql)
-      st = connection.prepare(sql)
-      st.execute(*params)
-      st.free_result()
-      nil
+      connection.query(sql)
     end
 
     def execute_fetch_hash_all(sql)
