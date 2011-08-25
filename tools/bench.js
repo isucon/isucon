@@ -25,11 +25,15 @@ if (process.argv.length > 3 && process.argv[3] === 'inf') {
   continuousMode = true;
 }
 
+function isValidHtml(content){
+  return content.indexOf('<html>') > -1 && content.indexOf('</html>');
+};
+
 function prepare(callback){
   engine.getArticle('/', targetHost, targetPort, function(err, content){
-    if (err){
-      output(null, null, null, null, function(err){process.exit(1); return;});
-    }
+    if (err){ output(null, null, null, null, function(err){process.exit(1); return;}); }
+    if (! isValidHtml(content)){ output(null, null, null, null, function(err){ process.exit(1); return;});};
+
     engine.parseHtml(content, function($){
       var latestArticleURI = $('#articleview :eq(0) .articlelink a').attr('href');
       var articleId = 1;
@@ -111,7 +115,10 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
     setTimeout(function(){
       engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
         if (err) { callback({summary:'failed', reason:['GET request failed after comment posted']}); return; }
-
+        if (! isValidHtml(content)) {
+          callback({summary:'failed', reason: ['content is not invalid html, content size:' + content.length]});
+          return;
+        }
         engine.parseHtml(content, function($){
           var nameLabel = (name.length < 1 ? '名無しさん' : name);
           var bodylines = body.split('\n');
@@ -168,8 +175,9 @@ function checkArticle(articleid, data, callback){
     data = article.data;
   }
   engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
-    if (err) {
-      callback({summary:'error'});
+    if (err){ callback({summary:'error', reason:['in checkArticle']}); return; }
+    if (! isValidHtml(content)){
+      callback({summary: 'error', reason:['in checkArticle, content is not valid html, size:' + content.length]});
       return;
     }
     engine.parseHtml(content, function($){
