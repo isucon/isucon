@@ -121,7 +121,7 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
         }
         engine.parseHtml(content, function($){
           var nameLabel = (name.length < 1 ? '名無しさん' : name);
-          var bodylines = body.split('\n');
+          var bodylines = body.split('\n').map(function(s){return s.trim();});
           while (bodylines[bodylines.length - 1].length < 1)
             bodylines.pop();
           var bodyText = bodylines.join('\n');
@@ -130,7 +130,7 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
             if (success) return;
             var c = $(element);
             if (c.children('.name').text() == nameLabel){
-              var gotlines = c.children('.body').html().split('\n').join('').split(/<br ?\/?>/i);
+              var gotlines = c.children('.body').html().split('\n').map(function(s){return s.trim();}).join('').split(/ *<br ?\/?>\n? */i);
               if (gotlines[0].substring(0,1) === '\n')
                 gotlines[0] = gotlines[0].substring(1);
               while (gotlines[gotlines.length - 1].length < 1)
@@ -191,12 +191,12 @@ function checkArticle(articleid, data, callback){
       if (! checkresult.title)
         failed_reasons.push('title mismatch, original:' + data.title);
       checkresult.created = (/^\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d( \+0900)?$/.exec($('#articleview .article .created').text()) ? true : false);
-      var gotbodylines = $('#articleview .article .body').html().split('\n').join('').split(/<br ?\/?>\n?/i);
+      var gotbodylines = $('#articleview .article .body').html().split('\n').map(function(s){return s.trim();}).join('').split(/ *<br ?\/?>\n? */i);
       if (gotbodylines[gotbodylines.length - 1].length < 1)
         gotbodylines.pop();
       if (gotbodylines[0].substring(0,1) === '\n')
         gotbodylines[0] = gotbodylines[0].substring(1);
-      var originallines = data.body.split('\n');
+      var originallines = data.body.split('\n').map(function(s){return s.trim();});
       if (originallines[originallines.length - 1].length < 1)
         originallines.pop();
       checkresult.body = (gotbodylines.join('\n') == originallines.join('\n'));
