@@ -206,6 +206,10 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
   });
 };
 
+/*
+curl -k -L http://cpanmin.us/ > ./cpanm; chmod +x ./cpanm
+./cpanm -Lextlib -n JSON Furl
+ */
 
 function checker(articleid, data, callback){
   checkArticle(articleid, data, function(checkresult){
@@ -216,7 +220,10 @@ function checker(articleid, data, callback){
       if (checkresult.summary !== 'success') {
         callback(checkresult); return;
       }
-      child.exec('perl -Mlib=' + __dirname + '/extlib/lib/perl5 ' + __dirname + '/static_check.pl ' + target, function(err, stdout, stderr){
+      var targetUrl = 'http://' + target + '/';
+      var cmd = 'perl -Mlib=' + __dirname + '/extlib/lib/perl5 ' + __dirname + '/static_check.pl ' + targetUrl;
+      child.exec(cmd, function(err, stdout, stderr){
+        console.log(targetUrl);
         console.log(stdout);
         var checkresult = JSON.parse(stdout);
         callback(checkresult);
