@@ -223,8 +223,6 @@ function checker(articleid, data, callback){
       var targetUrl = 'http://' + target + '/';
       var cmd = 'perl -Mlib=' + __dirname + '/extlib/lib/perl5 ' + __dirname + '/static_check.pl ' + targetUrl;
       child.exec(cmd, function(err, stdout, stderr){
-        console.log(targetUrl);
-        console.log(stdout);
         var checkresult = JSON.parse(stdout);
         callback(checkresult);
       });
