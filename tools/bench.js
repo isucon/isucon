@@ -217,6 +217,7 @@ function checker(articleid, data, callback){
         callback(checkresult); return;
       }
       child.exec(__dirname + '/static_check.pl ' + target, function(err, stdout, stderr){
+        console.log(stdout);
         var checkresult = JSON.parse(stdout);
         callback(checkresult);
       });
