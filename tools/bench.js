@@ -148,11 +148,9 @@ function checkLinkInSidebar(articleid, path, content, callback){
     return;
   }
   engine.parseHtml(content, function($){
-    console.log('check target id: ' + articleid);
     if ($('#sidebar table tr td a')
         .map(function(i,e){return $(e).attr('href');})
-        .filter(function(i,e){console.log('sidebar link path: ' + e);
-return e.split('/').pop() == articleid;}).length > 0) {
+        .filter(function(i,e){return e.split('/').pop() == articleid;}).length > 0) {
       callback({summary: 'success'});
     }
     else {
