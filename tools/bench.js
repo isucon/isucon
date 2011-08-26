@@ -216,7 +216,7 @@ function checker(articleid, data, callback){
       if (checkresult.summary !== 'success') {
         callback(checkresult); return;
       }
-      child.exec(__dirname + '/static_check.pl ' + target, function(err, stdout, stderr){
+      child.exec('perl -Mlib=' + __dirname + '/extlib/lib/perl5 ' + __dirname + '/static_check.pl ' + target, function(err, stdout, stderr){
         console.log(stdout);
         var checkresult = JSON.parse(stdout);
         callback(checkresult);
