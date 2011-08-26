@@ -1,5 +1,6 @@
 var fs = require('fs'),
     http = require('http'),
+    child = require('child_process'),
     async = require('async');
 
 var http_load = require('http_load'),
@@ -209,11 +210,16 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
 function checker(articleid, data, callback){
   checkArticle(articleid, data, function(checkresult){
     if (checkresult.summary !== 'success') {
-      callback(checkresult);
-      return;
+      callback(checkresult); return;
     }
     checkArticle(function(checkresult){
-      callback(checkresult);
+      if (checkresult.summary !== 'success') {
+        callback(checkresult); return;
+      }
+      child.exec(__dirname + '/static_check.pl ' + target, function(err, stdout, stderr){
+        var checkresult = JSON.parse(stdout);
+        callback(checkresult);
+      });
     });
   });
 };
