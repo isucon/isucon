@@ -21,7 +21,7 @@ var getArticle = exports.getArticle = function(path, hostname, portnum, retry, c
     retry = undefined;
   }
   http.get({
-    host: hostname, port: portnum, path: path, headers: {'User-Agent': 'ISUCon bench agent v1.0'}
+    host: hostname, port: portnum, path: path, headers: {'User-Agent': 'http_load 12mar2006'}
   }, function(res){
     if (res.statusCode !== 200) {
       if (retry) {

@@ -299,7 +299,7 @@ function output(dirpath, load_result, checker_result, poster_result, callback){
     port: conf.master.host.split(':')[1],
     method: 'POST',
     path: '/result/' + teamid,
-    headers: {'Content-Type': 'application/json', 'User-Agent': 'ISUCon bench agent v1.0'}
+    headers: {'Content-Type': 'application/json', 'User-Agent': 'ISUCon bench script v1.0'}
   }, function(res){
     callback(null);
   });
