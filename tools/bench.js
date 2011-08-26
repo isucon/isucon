@@ -1,13 +1,14 @@
 var fs = require('fs'),
-    http = require('http');
+    http = require('http'),
+    async = require('async');
 
 var http_load = require('http_load'),
     engine = require('bench_engine.js');
 
 var HTTP_LOAD_PARALLEL = 10,
-    HTTP_LOAD_SECONDS = 20,//180,
-    COMMENT_POST_PER_MIN_MAIN = 30,
-    COMMENT_POST_PER_MIN_OPT = 10,
+    HTTP_LOAD_SECONDS = 60, //180
+    COMMENT_POST_PER_MIN_MAIN = 40,
+    COMMENT_POST_PER_MIN_OPT = 20,
     COMMENT_SIZE = 200;
 
 var COMMENT_POST_INTERVALS = Math.floor(60 * 1000 / (COMMENT_POST_PER_MIN_MAIN + COMMENT_POST_PER_MIN_OPT));
@@ -99,12 +100,64 @@ function commentposter(maxArticleId, callback){
   var checkContent = false;
   var r = Math.floor(Math.random() * (COMMENT_POST_PER_MIN_MAIN + COMMENT_POST_PER_MIN_OPT));
   if (r > COMMENT_POST_PER_MIN_MAIN)
-    targetId = Math.floor(Math.random() * maxArticleId);
+    targetId = Math.floor(Math.random() * maxArticleId + 1);
   if (Math.random() > 0.8)
     checkContent = true;
   var commentSize = Math.floor(COMMENT_SIZE * (Math.random() + 0.5));
   postCommentAndCheck(targetId, commentSize, checkContent, callback);
 };
+
+function checkCommentFrom(name, body, articleid, content, callback){
+  if (! isValidHtml(content)) {
+    callback({summary:'failed', reason: ['article ' + articleid + ': content is not invalid html, content size:' + content.length]});
+    return;
+  }
+  engine.parseHtml(content, function($){
+    var nameLabel = (name.length < 1 ? '名無しさん' : name);
+    var bodylines = body.split('\n').map(function(s){return s.trim();});
+    while (bodylines[bodylines.length - 1].length < 1)
+      bodylines.pop();
+    var bodyText = bodylines.join('\n');
+    var success = false;
+    $('.comment').each(function(index, element){
+      if (success) return;
+      var c = $(element);
+      if (c.children('.name').text() == nameLabel){
+        var gotlines = c.children('.body').html().split('\n').map(function(s){return s.trim();}).join('').split(/ *<br ?\/?>\n? */i);
+        if (gotlines[0].substring(0,1) === '\n')
+          gotlines[0] = gotlines[0].substring(1);
+        while (gotlines[gotlines.length - 1].length < 1)
+          gotlines.pop();
+        if (bodyText === gotlines.join('\n'))
+          success = true;
+      }
+    });
+    if (success)
+      callback({summary:'success'});
+    else
+      callback({
+        summary:'failed',
+        reason:['target /article/' + articleid + ', comment not found, name:' + nameLabel + ', body:' + bodyText]
+      });
+  });
+}
+
+function checkLinkInSidebar(articleid, path, content, callback){
+  if (! isValidHtml(content)) {
+    callback({summary:'failed', reason: [path + ': content is not invalid html, content size:' + content.length]});
+    return;
+  }
+  engine.parseHtml(content, function($){
+    if ($('#sidebar table tr td a')
+        .map(function(i,e){return $(e).attr('href');})
+        .filter(function(i,e){return e.split('/').pop() == articleid;}).length > 0) {
+      callback({summary: 'success'});
+    }
+    else {
+      callback({summary:'failed', reason:['Sidebar update check failed on ' + path + ' after comment posted']});
+    };
+  });
+}
 
 function postCommentAndCheck(articleid, size, checkContent, callback){
   var spec = {articleid: articleid, size: size, hostname: targetHost, portnum: targetPort};
@@ -113,37 +166,40 @@ function postCommentAndCheck(articleid, size, checkContent, callback){
     if (! checkContent) { callback({summary:'success'}); return; }
 
     setTimeout(function(){
-      engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
-        if (err) { callback({summary:'failed', reason:['GET request failed after comment posted']}); return; }
-        if (! isValidHtml(content)) {
-          callback({summary:'failed', reason: ['content is not invalid html, content size:' + content.length]});
-          return;
-        }
-        engine.parseHtml(content, function($){
-          var nameLabel = (name.length < 1 ? '名無しさん' : name);
-          var bodylines = body.split('\n').map(function(s){return s.trim();});
-          while (bodylines[bodylines.length - 1].length < 1)
-            bodylines.pop();
-          var bodyText = bodylines.join('\n');
-          var success = false;
-          $('.comment').each(function(index, element){
-            if (success) return;
-            var c = $(element);
-            if (c.children('.name').text() == nameLabel){
-              var gotlines = c.children('.body').html().split('\n').map(function(s){return s.trim();}).join('').split(/ *<br ?\/?>\n? */i);
-              if (gotlines[0].substring(0,1) === '\n')
-                gotlines[0] = gotlines[0].substring(1);
-              while (gotlines[gotlines.length - 1].length < 1)
-                gotlines.pop();
-              if (bodyText === gotlines.join('\n'))
-                success = true;
-            }
+      async.parallel([
+        function(cb){
+          engine.getArticle('/article/' + articleid, targetHost, targetPort, true, function(err, content){
+            if (err) { cb(null, {summary:'failed', reason:['GET request failed after comment posted']}); return; }
+            checkCommentFrom(name, body, articleid, content, function(obj){cb(null, obj);});
           });
-          if (success)
-            callback({summary:'success'});
-          else
-            callback({summary:'failed', reason:['target /article/' + articleid + ', comment not found, name:' + nameLabel + ', body:' + bodyText]});
+        },
+        function(cb){
+          engine.getArticle('/', targetHost, targetPort, true, function(err, content){
+            if (err) { cb(null, {summary:'failed', reason:['GET request of / failed after comment posted']}); return; }
+            checkLinkInSidebar(articleid, '/', content, function(obj){cb(null, obj);});
+          });
+        },
+        function(cb){
+          var random_id = Math.floor(Math.random() * articleid + 1);
+          var check_path  = '/article/' + random_id;
+          engine.getArticle(check_path, targetHost, targetPort, true, function(err, content){
+            if (err) { cb(null, {summary:'failed', reason:['GET request of ' + check_path + ' failed after comment posted']}); return; }
+            checkLinkInSidebar(articleid, check_path, content, function(obj){cb(null, obj);});
+          });
+        }
+      ], function(err, results){
+        var summary = 'success';
+        var reason = [];
+        results.forEach(function(r){
+          if (r.summary !== 'success') {
+            summary = r.summary;
+            reason = reason.concat(r.reason);
+          }
         });
+        if (summary === 'success')
+          callback({summary:'success'});
+        else
+          callback({summary:summary, reason:reason});
       });
     }, 1000);
   });
