@@ -1,6 +1,10 @@
 var MY_TEAM = null;
 
+var SCREEN = false;
+
 var GRAPH_SHOW = false;
+
+google.load("visualization", "1", {packages:["corechart"]});
 
 $(function(){
   var TEAMS = $.map($('td.team'), function(t){return $(t).attr('id');});
@@ -10,7 +14,7 @@ $(function(){
       var teamid = teams.splice(Math.floor(Math.random() * teams.length), 1);
       update_team_status(teamid);
       if (teams.length > 0)
-        setTimeout(update_one_team, (fastMode ? 10: 10000));
+        setTimeout(update_one_team, ((fastMode || SCREEN) ? 10: 10000));
       else
         setTimeout(update_all_team, 20000);
     };
