@@ -92,7 +92,7 @@ function encolor_highest_score(){
   var team = null;
   $.each($('td.latest'), function(i,e){
     var s = Number($(e).text().split(':')[1]);
-    if (s > highest) {
+    if (s > highest && $(e).attr('id') !== 'team21') {
       highest = s;
       team = e;
     };
