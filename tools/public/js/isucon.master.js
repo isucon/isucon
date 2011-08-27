@@ -1,4 +1,4 @@
-var MY_TEAM = null;
+4var MY_TEAM = null;
 
 $(function(){
   var TEAMS = $.map($('td.team'), function(t){return $(t).attr('id');});
@@ -16,6 +16,7 @@ $(function(){
   };
   setTimeout(function(){update_all_team(true);}, 1000);
   setInterval(function(){if (MY_TEAM){ update_team_status(MY_TEAM); }}, 5000);
+  setInterval(encolor_highest_score, 30000);
 
   $('#bunner').click(function(event){
     if (MY_TEAM) {
@@ -37,6 +38,21 @@ $(function(){
     show_start_bench_dialog($(event.target).closest('td.team').attr('id'));
   });
 });
+
+function encolor_highest_score(){
+  $('td.highscore').removeClass('highscore');
+  var highest = 0;
+  var team = null;
+  $.each($('td.latest'), function(i,e){
+    var s = Number($(e).text().split(':')[1]);
+    if (s > highest) {
+      highest = s;
+      team = e;
+    };
+  });
+  if (team)
+    $(team).closest('td.team').addClass('highscore');
+}
 
 function update_team_status(teamid){
   if (! (/^team\d+$/.exec(teamid)))
