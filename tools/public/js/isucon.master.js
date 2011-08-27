@@ -1,5 +1,7 @@
 var MY_TEAM = null;
 
+var GRAPH_SHOW = false;
+
 $(function(){
   var TEAMS = $.map($('td.team'), function(t){return $(t).attr('id');});
   var update_all_team = function(fastMode){
@@ -17,6 +19,11 @@ $(function(){
   setTimeout(function(){update_all_team(true);}, 1000);
   setInterval(function(){if (MY_TEAM){ update_team_status(MY_TEAM); }}, 5000);
   setInterval(encolor_highest_score, 30000);
+
+  setInterval(function(){
+    if (GRAPH_SHOW)
+      check_toggle_graph();
+  }, 60000);
 
   $('#bunner').click(function(event){
     if (MY_TEAM) {
@@ -38,6 +45,42 @@ $(function(){
     show_start_bench_dialog($(event.target).closest('td.team').attr('id'));
   });
 });
+
+var graph_drawn = false;
+
+function check_toggle_graph(){
+  if (graph_drawn) {
+    $('#grapharea').hide();
+    $('#scoreboard').show();
+    graph_drawn = false;
+    return;
+  }
+
+  $.get('/history', function(data){
+    if ((! data.results) || data.results.length < 1)
+      return;
+
+    $('#scoreboard').hide();
+    $('#grapharea').show();
+
+    var default_options = {width: 750, height: 450};
+    var datatable = new google.visualization.DataTable();
+    datatable.addColumn({name:'time', type:'number'});
+    datatable.addColumn({name:'team', type:'string'});
+    datatable.addColumn({name:'score', type:'number'});
+
+    datatable.addRows(data.length);
+    var dataRows = data.length;
+    for(var i = 0; i < dataRows; i++){
+      datatable.setValue(i, 0, Number(data[i][0]));
+      datatable.setValue(i, 0, data[i][1]);
+      datatable.setValue(i, 0, Number(data[i][2]));
+    }
+    var chart = new google.visualization.LineChart(document.getElementById(chart_div_id));
+    chart.draw(datatable, {title: 'ISUCon timeline', width: 750, height: 450});
+    graph_drawn = true;
+  });
+};
 
 function encolor_highest_score(){
   $('td.highscore').removeClass('highscore');
