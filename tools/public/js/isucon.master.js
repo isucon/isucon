@@ -5,7 +5,7 @@ var SCREEN = false;
 var GRAPH_SHOW = false;
 
 $(function(){
-  google.load("visualization", "1", {packages:["corechart"]});
+  // google.load("visualization", "1", {packages:["corechart"]});
 
   var TEAMS = $.map($('td.team'), function(t){return $(t).attr('id');});
   var update_all_team = function(fastMode){
