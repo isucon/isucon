@@ -76,7 +76,7 @@ function check_toggle_graph(){
       datatable.setValue(i, 0, data[i][1]);
       datatable.setValue(i, 0, Number(data[i][2]));
     }
-    var chart = new google.visualization.LineChart(document.getElementById(chart_div_id));
+    var chart = new google.visualization.LineChart(document.getElementById('graph'));
     chart.draw(datatable, {title: 'ISUCon timeline', width: 750, height: 450});
     graph_drawn = true;
   });
