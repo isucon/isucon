@@ -4,9 +4,9 @@ var SCREEN = false;
 
 var GRAPH_SHOW = false;
 
-google.load("visualization", "1", {packages:["corechart"]});
-
 $(function(){
+  google.load("visualization", "1", {packages:["corechart"]});
+
   var TEAMS = $.map($('td.team'), function(t){return $(t).attr('id');});
   var update_all_team = function(fastMode){
     var teams = TEAMS.concat();
