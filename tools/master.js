@@ -94,6 +94,12 @@ app.get('/status/:teamid', function(req, res){
 app.get('/history', function(req, res){
   var HISTORY_QUERY = 'SELECT teamid,resulttime,score FROM results WHERE test=1 ORDER BY resulttime';
   dbclient.query(HISTORY_QUERY, function(err, results){
+    var rows = [];
+    results.forEach(function(r){
+      var t = r.resulttime.substring(8);
+      var secofday = t.substring(0,2) * 3600 + t.substring(2,2) * 60 + t.substring(4);
+      rows.push([secofday, r.teamid, r.score]);
+    });
     res.send({history:results});
   });
 });
