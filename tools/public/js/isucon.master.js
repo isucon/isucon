@@ -1,4 +1,4 @@
-4var MY_TEAM = null;
+var MY_TEAM = null;
 
 $(function(){
   var TEAMS = $.map($('td.team'), function(t){return $(t).attr('id');});
