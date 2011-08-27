@@ -52,7 +52,7 @@ function encolor_highest_score(){
   });
   if (team)
     $(team).closest('td.team').addClass('highscore');
-}
+};
 
 function update_team_status(teamid){
   if (! (/^team\d+$/.exec(teamid)))
