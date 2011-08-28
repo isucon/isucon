@@ -59,9 +59,9 @@ html
       img(src="/images/isucon_title.jpg", width="125px", height="38px", style="border: none;")
     #scoreboard
       table#waku
-        - each row in [0,1,2]
+        - each row in [0]
           tr.dan
-            - each col in [0,1,2,3,4,5,6]
+            - each col in [0]
               - team = teams[row * 7 + col]
               td.team(id="#{team.id}")
                 table.box(style="border: 0;")

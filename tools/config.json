@@ -1,43 +1,15 @@
 {
   "master":{
-    "host":"125.6.147.250:3080",
+    "host":"127.0.0.1:3080",
     "pass":"obU9HNc3rk5N"
   },
   "bench": {
-    "bench01": "125.6.147.183:3101",
-    "bench02": "125.6.147.184:3101",
-    "bench03": "125.6.147.185:3101",
-    "bench04": "125.6.147.186:3101",
-    "bench05": "125.6.147.187:3101",
-    "bench06": "125.6.147.188:3101",
-    "bench07": "125.6.147.189:3101"
+    "bench01": "127.0.0.1:3101"
   },
   "teamlist": [
-    "team01", "team02", "team03", "team04", "team05", "team06", "team07", "team08", "team09", "team10",
-    "team11", "team12", "team13", "team14", "team15", "team16", "team17", "team18", "team19", "team20",
-    "team21"
+    "team01" 
   ],
   "teams": {
-    "team01": {"id":"team01", "name":"都落ち", "pass":"iq3hSB7V", "bench":"bench01", "target":"125.6.147.219:80"},
-    "team02": {"id":"team02", "name":"シーサー", "pass":"MjiwKb0R", "bench":"bench01", "target":"125.6.147.220:80"},
-    "team03": {"id":"team03", "name":"team fsck", "pass":"MKQv0sWC", "bench":"bench01", "target":"125.6.147.221:80"},
-    "team04": {"id":"team04", "name":"yut148", "pass":"KHu3wgDk", "bench":"bench02", "target":"125.6.147.222:80"},
-    "team05": {"id":"team05", "name":"京都スイーツ", "pass":"sxMNg5dH", "bench":"bench02", "target":"125.6.147.223:80"},
-    "team06": {"id":"team06", "name":"果実まるごとみかんサワー", "pass":"zYG1rJCd", "bench":"bench02", "target":"125.6.147.224:80"},
-    "team07": {"id":"team07", "name":"真夏のサイクロンウェーブ", "pass":"2pUZUnuN", "bench":"bench03", "target":"125.6.147.225:80"},
-    "team08": {"id":"team08", "name":"WHK", "pass":"PU8Xy0sv", "bench":"bench03", "target":"125.6.147.226:80"},
-    "team09": {"id":"team09", "name":"いんふらえんじにあー", "pass":"OTeDb62A", "bench":"bench03", "target":"125.6.147.227:80"},
-    "team10": {"id":"team10", "name":"ツヤマ倶楽部", "pass":"3aJkN2w9", "bench":"bench04", "target":"125.6.147.159:80"},
-    "team11": {"id":"team11", "name":"イェーイ!メッチャッホリデー!!部", "pass":"skrUAH7e", "bench":"bench04", "target":"125.6.147.160:80"},
-    "team12": {"id":"team12", "name":"情熱会", "pass":"7gmquCpW", "bench":"bench04", "target":"125.6.147.161:80"},
-    "team13": {"id":"team13", "name":"黒猫さんチーム", "pass":"7JdHR8cD", "bench":"bench05", "target":"125.6.147.162:80"},
-    "team14": {"id":"team14", "name":"team_karakani", "pass":"uyD354zr", "bench":"bench05", "target":"125.6.147.163:80"},
-    "team15": {"id":"team15", "name":"チームやすべえ", "pass":"qJoU9BXt", "bench":"bench05", "target":"125.6.147.164:80"},
-    "team16": {"id":"team16", "name":"fujiwara組", "pass":"QpVbq9Du", "bench":"bench06", "target":"125.6.147.165:80"},
-    "team17": {"id":"team17", "name":"くまさんちーむ", "pass":"9Pnjwl6u", "bench":"bench06", "target":"125.6.147.166:80"},
-    "team18": {"id":"team18", "name":"ことりさんチーム", "pass":"oWQ3TnxB", "bench":"bench06", "target":"125.6.147.167:80"},
-    "team19": {"id":"team19", "name":"山形組", "pass":"7SJ4EQwP", "bench":"bench07", "target":"125.6.147.168:80"},
-    "team20": {"id":"team20", "name":"livedoor選抜(mala)", "pass":"1m59B6SM", "bench":"bench07", "target":"125.6.147.169:80"},
-    "team21": {"id":"team21", "name":"お遊び", "pass":"32GXxT3R", "bench":"bench07", "target":"125.6.147.170:80"}
+    "team01": {"id":"team01", "name":"oreore", "pass":"pass", "bench":"bench01", "target":"127.0.0.1:80"}
   }
 }  
