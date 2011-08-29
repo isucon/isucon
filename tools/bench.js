@@ -6,14 +6,14 @@ var fs = require('fs'),
 var http_load = require('http_load'),
     engine = require('bench_engine.js');
 
-var HTTP_LOAD_PARALLEL = 10,
-    HTTP_LOAD_SECONDS = 60, //180
+var HTTP_LOAD_PARALLEL = 2, //10,
+    HTTP_LOAD_SECONDS = 60, //180,
     COMMENT_POST_PER_MIN_MAIN = 40,
     COMMENT_POST_PER_MIN_OPT = 20,
     COMMENT_SIZE = 200;
 
 var COMMENT_POST_INTERVALS = Math.floor(60 * 1000 / (COMMENT_POST_PER_MIN_MAIN + COMMENT_POST_PER_MIN_OPT));
-var CHEKCER_START_DURATION = Math.floor(HTTP_LOAD_SECONDS / 3) * 1000;
+var CHECKER_START_DURATION = Math.floor(HTTP_LOAD_SECONDS / 3) * 1000;
 
 var conf = JSON.parse(fs.readFileSync(__dirname + '/config.json', 'utf-8'));
 
@@ -37,9 +37,12 @@ function isValidHtml(content){
 
 function prepare(callback){
   engine.getArticle('/', targetHost, targetPort, function(err, content){
-    if (err){ output(null, null, null, null, function(err){process.exit(1); return;}); }
-    if (! isValidHtml(content)){ output(null, null, null, null, function(err){ process.exit(1); return;});};
-
+    if (err){ output(null, null, {summary:'error', reason:['failed to GET /']}, null, function(err){process.exit(1); return;}); }
+    if (! isValidHtml(content)){
+      output(null, null, {summary:'error', reason:['Content of / is broken']}, null, function(err){
+        process.exit(1); return;
+      });
+    };
     engine.parseHtml(content, function($){
       var latestArticleURI = $('#articleview :eq(0) .articlelink a').attr('href');
       var articleId = 1;
@@ -51,7 +54,9 @@ function prepare(callback){
         hostname:targetHost, portnum:targetPort, articlesize:1000, articleid:articleId
       }, function(err, articleid, data){
         if (err){
-          output(null, null, null, null, function(err){process.exit(1); return;});
+          output(null, null, {summary:'error', reason:['error on post article id (maybe):' + articleId]}, null, function(err){
+            process.exit(1); return;
+          });
         }
         engine.generateUrlsFile(targetHost, targetPort, articleid, function(dirpath){
           callback(dirpath, articleid, data);
@@ -70,7 +75,9 @@ function load(dirpath, articleid, data){
   var checker_result = null;
   var poster_result = null; // null(failed) or {summary:'failed'} or {summary:'success'}
 
-  setTimeout(function(){checker(articleid, data, function(r){checker_result = r;});}, CHEKCER_START_DURATION);
+  setTimeout(function(){
+    checker(articleid, data, function(r){checker_result = r;});
+  }, CHECKER_START_DURATION);
 
   var posterId = setInterval(function(){
     commentposter(articleid, function(r){
@@ -86,7 +93,7 @@ function load(dirpath, articleid, data){
 
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
     if (err) {
-      output(dirpath, {summary:'error on http_load'}, null, null, function(err){process.exit(1); return;});
+      output(dirpath, {summary:'error on http_load'}, checker_result, null, function(err){process.exit(1); return;});
     }
     clearInterval(posterId);
     output(dirpath, result, checker_result, poster_result, function(err){
@@ -291,7 +298,7 @@ function output(dirpath, load_result, checker_result, poster_result, callback){
     load_result.response = {success:0,error:0};
       
   if (checker_result === null)
-    checker_result = {summary:'init access (GET / or POST one article) failed'};
+    checker_result = {summary:'checker cannot receive response. http_load error, or reverse proxy too heavy.'};
   if (poster_result === null)
     poster_result = {summary:'not run'};
 
