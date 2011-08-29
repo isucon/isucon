@@ -23,8 +23,12 @@ var teamid = process.argv[2],
     targetPort = target.split(':')[1];
 
 var continuousMode = false;
-if (process.argv.length > 3 && process.argv[3] === 'inf') {
-  continuousMode = true;
+var standalone = false;
+if (process.argv.length > 3) {
+  if (process.argv[3] === 'inf')
+    continuousMode = true;
+  else if (process.argv[3] === 'standalone')
+    standalone = true;
 }
 
 function isValidHtml(content){
@@ -306,6 +310,13 @@ function output(dirpath, load_result, checker_result, poster_result, callback){
   };
   if (dirpath !== null)
     fs.writeFileSync(dirpath + '/result' + (new Date()).getTime(), JSON.stringify(data, null, '\t') + '\n', 'utf8');
+
+  if (standalone) {
+    console.log(data);
+    callback();
+    return;
+  }
+
   var req = http.request({
     host: conf.master.host.split(':')[0],
     port: conf.master.host.split(':')[1],
