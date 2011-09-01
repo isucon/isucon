@@ -1,0 +1,6 @@
+source :rubygems
+gem 'sinatra'
+gem 'haml'
+gem 'mysql2'
+gem 'json'
+gem 'thin'
