@@ -148,7 +148,7 @@ function update_team_status(teamid){
       highest.text('no tests successed');
       highestAt.text('at ...');
     }
-    
+
     if (data.running && (! bench.hasClass('running'))) {
       bench.text('running');
       bench.addClass('running');

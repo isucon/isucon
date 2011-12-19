@@ -15,7 +15,7 @@ sub load_config {
     open( my $fh, '<', $self->root_dir . '/../config/hosts.json') or die $!;
     local $/;
     my $json = <$fh>;
-    $self->{_config} = decode_json($json);    
+    $self->{_config} = decode_json($json);
 }
 
 sub dbh {
@@ -36,7 +36,7 @@ filter 'recent_commented_articles' => sub {
     sub {
         my ( $self, $c )  = @_;
         $c->stash->{recent_commented_articles} = $self->dbh->selectall_arrayref(
-            'SELECT a.id, a.title FROM comment c INNER JOIN article a ON c.article = a.id 
+            'SELECT a.id, a.title FROM comment c INNER JOIN article a ON c.article = a.id
             GROUP BY a.id ORDER BY MAX(c.created_at) DESC LIMIT 10',
             { Slice => {} });
         $app->($self,$c);
@@ -57,7 +57,7 @@ get '/article/:articleid' => [qw/recent_commented_articles/] => sub {
         'SELECT id,title,body,created_at FROM article WHERE id=?',
         {}, $c->args->{articleid});
     my $comments = $self->dbh->selectall_arrayref(
-        'SELECT name,body,created_at FROM comment WHERE article=? ORDER BY id', 
+        'SELECT name,body,created_at FROM comment WHERE article=? ORDER BY id',
         { Slice => {} }, $c->args->{articleid});
     $c->render('article.tx', { article => $article, comments => $comments });
 };
@@ -80,7 +80,7 @@ post '/comment/:articleid' => sub {
     my $sth = $self->dbh->prepare('INSERT INTO comment SET article = ?, name =?, body = ?');
     $sth->execute(
         $c->args->{articleid},
-        $c->req->param('name'), 
+        $c->req->param('name'),
         $c->req->param('body')
     );
     $c->redirect($c->req->uri_for('/article/'.$c->args->{articleid}));

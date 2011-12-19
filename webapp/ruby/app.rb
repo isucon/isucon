@@ -64,12 +64,12 @@ class ISUConApplication < Sinatra::Base
     haml :index, :locals => {:articles => articles}
   end
 
-  get '/post' do 
+  get '/post' do
     load_sidebar_data!
     haml :post
   end
 
-  post '/post' do 
+  post '/post' do
     title = sql_escape(request.params['title'])
     body = sql_escape(request.params['body'])
     article_post_query = "INSERT INTO article SET title='#{title}', body='#{body}'"
@@ -89,7 +89,7 @@ class ISUConApplication < Sinatra::Base
     haml :article, :locals => {:article => article, :comments => comments}
   end
 
-  post '/comment/:articleid' do 
+  post '/comment/:articleid' do
     article_id = params[:articleid]
     name = sql_escape(request.params['name'])
     body = sql_escape(request.params['body'])
