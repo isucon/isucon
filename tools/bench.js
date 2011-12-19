@@ -296,7 +296,7 @@ function output(dirpath, load_result, checker_result, poster_result, callback){
     load_result = {response:{success:0,error:1}, summary:'fail'};
   if (! load_result.response)
     load_result.response = {success:0,error:0};
-      
+
   if (checker_result === null)
     checker_result = {summary:'checker cannot receive response. http_load error, or reverse proxy too heavy.'};
   if (poster_result === null)

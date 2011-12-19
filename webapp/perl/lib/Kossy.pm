@@ -126,10 +126,10 @@ sub build_app {
 my $_ROUTER={};
 sub _router {
     my $klass = shift;
-    my $class = ref $klass ? ref $klass : $klass; 
+    my $class = ref $klass ? ref $klass : $klass;
     if ( !$_ROUTER->{$class} ) {
         $_ROUTER->{$class} = [];
-    }    
+    }
     if ( @_ ) {
         push @{ $_ROUTER->{$class} }, [@_];
     }
@@ -146,7 +146,7 @@ sub _connect {
     $class->_router(
         $pattern,
         { action => $code, filter => $filter },
-        { method => [ map { uc $_ } @$methods ] } 
+        { method => [ map { uc $_ } @$methods ] }
     );
 }
 
@@ -165,7 +165,7 @@ sub filter {
     my $class = caller;
     if ( !$_FILTER->{$class} ) {
         $_FILTER->{$class} = {};
-    }    
+    }
     if ( @_ ) {
         $_FILTER->{$class}->{$_[0]} = $_[1];
     }
@@ -174,13 +174,13 @@ sub filter {
 
 sub wrap_filter {
     my $klass = shift;
-    my $class = ref $klass ? ref $klass : $klass; 
+    my $class = ref $klass ? ref $klass : $klass;
     if ( !$_FILTER->{$class} ) {
         $_FILTER->{$class} = {};
     }
     my ($filter,$app) = @_;
     my $filter_subref = $_FILTER->{$class}->{$filter};
-    Carp::croak sprintf("Filter:%s is not exists", $filter) unless $filter_subref;    
+    Carp::croak sprintf("Filter:%s is not exists", $filter) unless $filter_subref;
     return $filter_subref->($app);
 }
 
