@@ -7,7 +7,7 @@
     "bench01": "127.0.0.1:3101"
   },
   "teamlist": [
-    "team01" 
+    "team01"
   ],
   "teams": {
     "team01": {"id":"team01", "name":"oreore", "pass":"pass", "bench":"bench01", "target":"127.0.0.1:80"}

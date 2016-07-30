@@ -6,8 +6,30 @@ use utf8;
 use Kossy;
 use DBI;
 use JSON;
+use Cache::Memcached::Fast::Safe;
+use Data::MessagePack;
+use Compress::LZ4 ();
 
 our $VERSION = 0.01;
+
+{
+    my $msgpack = Data::MessagePack->new->utf8;
+    sub _message_pack   { $msgpack->pack(@_)   }
+    sub _message_unpack { $msgpack->unpack(@_) }
+    sub _compress_lz4   { ${$_[1]} = Compress::LZ4::compress(${$_[0]})   }
+    sub _uncompress_lz4 { ${$_[1]} = Compress::LZ4::decompress(${$_[0]}) }
+}
+
+my $_CACHE = Cache::Memcached::Fast::Safe->new(
+    servers            => ['127.0.0.1:11211'],
+    utf8               => 1,
+    serialize_methods  => [\&_message_pack, \&_message_unpack],
+    ketama_points      => 150,
+    hash_namespace     => 0,
+    compress_threshold => 5_000,
+    compress_methods   => [\&_compress_lz4, \&_uncompress_lz4],
+);
+sub cache { $_CACHE }
 
 sub load_config {
     my $self = shift;
@@ -36,8 +58,7 @@ filter 'recent_commented_articles' => sub {
     sub {
         my ( $self, $c )  = @_;
         $c->stash->{recent_commented_articles} = $self->dbh->selectall_arrayref(
-            'SELECT a.id, a.title FROM comment c INNER JOIN article a ON c.article = a.id 
-            GROUP BY a.id ORDER BY MAX(c.created_at) DESC LIMIT 10',
+            'SELECT id, title FROM article ORDER BY last_commented_at DESC LIMIT 10',
             { Slice => {} });
         $app->($self,$c);
     }
@@ -69,7 +90,7 @@ get '/post' => [qw/recent_commented_articles/] => sub {
 
 post '/post' => sub {
     my ( $self, $c )  = @_;
-    my $sth = $self->dbh->prepare('INSERT INTO article SET title = ?, body = ?');
+    my $sth = $self->dbh->prepare_cached('INSERT INTO article SET title = ?, body = ?');
     $sth->execute($c->req->param('title'), $c->req->param('body'));
     $c->redirect($c->req->uri_for('/'));
 };
@@ -77,12 +98,16 @@ post '/post' => sub {
 post '/comment/:articleid' => sub {
     my ( $self, $c )  = @_;
 
-    my $sth = $self->dbh->prepare('INSERT INTO comment SET article = ?, name =?, body = ?');
+    my $sth = $self->dbh->prepare_cached('INSERT INTO comment SET article = ?, name =?, body = ?');
     $sth->execute(
         $c->args->{articleid},
         $c->req->param('name'), 
         $c->req->param('body')
     );
+
+    $sth = $self->dbh->prepare_cached('UPDATE article SET last_commented_at = CURRENT_TIMESTAMP() WHERE id = ?');
+    $sth->execute($c->args->{articleid});
+
     $c->redirect($c->req->uri_for('/article/'.$c->args->{articleid}));
 };
 

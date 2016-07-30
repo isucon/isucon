@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS isucon.article (
   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(128) NOT NULL,
   body  VARCHAR(4096) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_commented_at TIMESTAMP DEFAULT NULL,
+  INDEX (last_commented_at),
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS isucon.comment (
@@ -21,7 +23,7 @@ CREATE TABLE IF NOT EXISTS isucon.comment (
   body VARCHAR(1024) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX (article, id DESC),
-  # SELECT article FROM comment GROUP BY article ORDER BY created_at DESC LIMIT 10;
-  # INDEX (created_at DESC, article)
+  -- SELECT article FROM comment GROUP BY article ORDER BY created_at DESC LIMIT 10;
+  -- INDEX (created_at DESC, article)
   INDEX (article, created_at DESC)
 ) ENGINE=InnoDB;

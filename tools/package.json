@@ -1,0 +1,22 @@
+{
+  "name": "isucon-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "agent.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "async": "^2.0.1",
+    "express": "^2.4.7",
+    "jade": "^1.11.0",
+    "jsdom": "^9.4.1",
+    "mysql": "^2.11.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
