@@ -3,3 +3,5 @@ webapp/config/hosts.json
 tools/data/isucon_*
 tools/data/isucon_*/*
 tools/http_load-12mar2006
+webapp/perl/extlib
+webapp/perl/MYMETA.*
