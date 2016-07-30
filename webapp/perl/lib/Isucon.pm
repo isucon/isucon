@@ -84,7 +84,7 @@ post '/comment/:articleid' => sub {
         $c->req->param('body')
     );
 
-    $sth = $self->dbh->prepare('INSERT INTO article SET last_commented_at = CURRENT_TIMESTAMP() WHERE id = ?');
+    $sth = $self->dbh->prepare('UPDATE article SET last_commented_at = CURRENT_TIMESTAMP() WHERE id = ?');
     $sth->execute($c->args->{articleid});
 
     $c->redirect($c->req->uri_for('/article/'.$c->args->{articleid}));
