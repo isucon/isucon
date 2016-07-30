@@ -1,7 +1,3 @@
-use inc::Module::Install;
-name 'Isucon';
-all_from 'lib/Isucon.pm';
-
 requires 'parent';
 requires 'Scalar::Util';
 requires 'Plack';
@@ -18,5 +14,3 @@ requires 'Class::Accessor::Lite';
 requires 'DBI', 1.616;
 requires 'DBD::mysql';
 requires 'JSON';
-
-WriteAll;
