@@ -18,3 +18,6 @@ requires 'JSON::XS';
 requires 'WWW::Form::UrlEncoded::XS';
 requires 'HTTP::Parser::XS';
 requires 'Cookie::Baker::XS';
+requires 'Cache::Memcached::Fast::Safe';
+requires 'Data::MessagePack';
+requires 'Compress::LZ4';
