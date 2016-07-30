@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS isucon.article (
   title VARCHAR(128) NOT NULL,
   body  VARCHAR(4096) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_commented_at TIMESTAMP DEFAULT NULL
+  last_commented_at TIMESTAMP DEFAULT NULL,
+  INDEX (last_commented_at),
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS isucon.comment (
