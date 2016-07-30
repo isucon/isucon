@@ -118,7 +118,7 @@ sub build_app {
                 die $_;
             };
         }
-        return [404, [content_type=>'text/html'], 'Not Found'];
+        return [404, [content_type=>'text/html'], ['Not Found']];
     };
 }
 

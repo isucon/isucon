@@ -4,12 +4,12 @@
     "pass":"obU9HNc3rk5N"
   },
   "bench": {
-    "bench01": "127.0.0.1:3101"
+    "bench01": "127.0.0.1:5000"
   },
   "teamlist": [
     "team01" 
   ],
   "teams": {
-    "team01": {"id":"team01", "name":"oreore", "pass":"pass", "bench":"bench01", "target":"127.0.0.1:80"}
+    "team01": {"id":"team01", "name":"oreore", "pass":"pass", "bench":"bench01", "target":"127.0.0.1:5000"}
   }
 }  

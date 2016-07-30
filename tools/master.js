@@ -20,7 +20,7 @@ function formatDate(d){
     + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
 };
 
-var dbclient = mysql.createClient({
+var dbclient = mysql.createConnection({
   host: 'localhost',
   port: 3306,
   user: 'isumaster',

@@ -5,3 +5,4 @@ tools/data/isucon_*/*
 tools/http_load-12mar2006
 webapp/perl/extlib
 webapp/perl/MYMETA.*
+tools/node_modules/

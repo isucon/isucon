@@ -5,10 +5,11 @@ var parseHtml = exports.parseHtml = function(content, callback){
     html: content,
     scripts: [
       'http://code.jquery.com/jquery.js'
-    ]
-  }, function (err, window) {
-    var $ = window.jQuery;
-    callback(window.$);
+    ],
+    done: function (err, window) {
+      var $ = window.jQuery;
+      callback(window.$);
+    }
   });
 };
 
