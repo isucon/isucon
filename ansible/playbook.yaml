@@ -1,0 +1,87 @@
+---
+
+- hosts: all
+  remote_user: karupanerura
+  become: yes
+  tasks:
+    - block:
+        - name: add apt-key (percona)
+          apt_key: keyserver=keys.gnupg.net id=1C4CBDCDCD2EFD2A
+        - name: add apt-repositories (percona)
+          apt_repository: repo="{{ item }}" state=present
+          with_items:
+            - deb http://repo.percona.com/apt {{ ansible_distribution_release }} main
+            - deb-src http://repo.percona.com/apt {{ ansible_distribution_release }} main
+    # - name: set timezone to Asia/Tokyo
+    #   timezone: name=Asia/Tokyo
+    - block:
+        - name: install common packages
+          apt: name={{ item }} update_cache=yes cache_valid_time=3600
+          with_items:
+            - language-pack-ja
+        - name: generate locale (ja_JP.UTF-8)
+          locale_gen: name=ja_JP.UTF-8 state=present
+    - block:
+        - name: remove nano
+          apt: name=nano state=absent
+        - name: install packages (build tools)
+          apt: name={{ item }} update_cache=yes cache_valid_time=3600
+          with_items:
+            - build-essential
+            - pkg-config
+            - cmake
+            - autoconf
+        - name: install packages (libraries)
+          apt: name={{ item }} update_cache=yes cache_valid_time=3600
+          with_items:
+            - libmysqlclient-dev
+            - libssl-dev
+            - libreadline-dev
+            - libxml2-dev
+            - libpcre3-dev
+        - name: install packages (tools)
+          apt: name={{ item }} update_cache=yes cache_valid_time=3600
+          with_items:
+            - vim
+            - dstat
+            - tmux
+            - ngrep
+            - tcpdump
+            - curl
+            - wget
+            - git
+            - percona-toolkit
+        - name: install packages (daemons)
+          apt: name={{ item }} update_cache=yes cache_valid_time=3600
+          with_items:
+            - nginx
+            - supervisor
+            - memcached
+            - redis-server
+            - mysql-server
+            - mysql-common
+            - mysql-client
+    - block:
+        - name: create users
+          user: name={{ item }} shell=/bin/bash group=admin
+          with_items:
+            - isucon
+            - silvers
+            - ar_tama
+            - karupanerura
+        - name: create ssh-key
+          user: name=isucon shell=/bin/bash group=admin generate_ssh_key=yes
+        - name: add pubkey to authorized_keys (silvers)
+          authorized_key: user=silvers key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCdvdkO4DFFFh28Qk3TLUQ4eH2BwNbziU0mMBU25+Kta3Vqm1+EfFWXjMyEumgVmq5I6uJwoYcGPzEiFrkGSTqcBcK+xVtRjSd8OfoYHmruLozkYpmmhJxDRf6u5RKW7jLPBcxvCR2k9/mGIBP7diPgwdvjcPufhcUoXWaJJKHgXPaBX/Vje5F8qBVjvrbHs3d7900vDlUfS9BUUQgbXwPOSDJ2tSvEI7LHfuHj8SJajJFJuO9TvM8HaQdF6ALM2DjiMRbZ+c8n9qH3m/NbP0hJ54Y2evAxxiVZI1dg/VEzC03cZ8n5GSelTVQZrFA7L2lmhIdgOKOvOtl/E1KtihJb y-matsumoto@mf"
+        - name: add pubkey to authorized_keys (ar_tama)
+          authorized_key: user=ar_tama key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDK4XjkiprSNpDDcSHEztHEy+8lwmvj6nyKBAfj1gs/BdQYJkxPTllcdpp4QN8JAVuSOGzK9dWSBTnHMGEyRKvCeE5iGNefdAPEBViJfP81tM3WchRvwmRUIIadI+y1FjhLq6WRMMzINth8sGJF5ASINGmzz5/vNSKB7OMUvYHalXBZQr8785DcYATZhTWoT5PMlKPnoz99RT/ooOS04ah5PYh7OsDMOfpy/infBjTvpkd6wFgpFDgVB7f84ladBCBor1rCAZv5XiCCn/sqZYhxIzjZv/BL1m8hBjaEFM+rGgvKTtW3gMTnxkWAmIg8QLLfqVBQxaPh+QljZC0FyJ0X tama@Labit-air.local"
+        - name: add pubkey to authorized_keys (karupanerura)
+          authorized_key: user=karupanerura key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDraZbO8OakrSMV+Q8OpEUhlaP2l58ZjafZutSNkymi0fYfB28xRyreiJKv3O8Kwt5VllPdcmsQRkm8UM4XqhGneiUj7Zrpc0TyzuMsLbMMSf3qDVp6jHvPVl+cwADXa7tZtl77seE9TtWebNRfdg2pmzXxtdSTsgzh1ft6xb/XolCRlBpwESKLouw88RxcjDIfWXMbKI0ijfhRsouq90gkVboBvegHVH3+wfXjmGpbuBlLGdx4nhMafXOSORSNj5Btl18dpeK8glkXCnmEamNm2KxTrHFHBLIlx+o3e5XLHN5C9TSR6FVvrlTjckQ97dAwngraUVZjJaibJ5r7IkR5 karupanerura@karupaneruras-MacBook-Pro.local"
+    - name: sudo NOPASSWDnize
+      lineinfile: dest=/etc/sudoers regexp="^%admin" line="%admin ALL=(ALL) NOPASSWD:ALL"
+    - block:
+        - name: setup nginx conf
+          copy: src=nginx.conf dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
+        - name: reload nginx
+          service: name=nginx state=restarted
+      tags: nginx
