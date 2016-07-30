@@ -23,3 +23,9 @@ ansible-playbook -i hosts playbook.yaml --tags nginx
 ```bash
 ansible-playbook -i hosts playbook.yaml --tags mysql
 ```
+
+## supervisor
+
+```bash
+ansible-playbook -i hosts playbook.yaml --tags supervisor
+```
