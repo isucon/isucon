@@ -39,6 +39,7 @@ sub psgi {
     my $app = $self->build_app;
     $app = builder {
         enable 'ReverseProxy';
+        enable "Plack::Middleware::AccessLog", format => "combined";
         enable 'Static',
             path => qr!^/(?:(?:css|js|images)/|favicon\.ico$)!,
             root => $self->{root_dir} . '/public';

@@ -93,7 +93,6 @@ function load(dirpath, articleid, data){
 
   http_load.start(dirpath + '/urls', {parallel: HTTP_LOAD_PARALLEL, seconds: HTTP_LOAD_SECONDS}, function(err, result){
     if (err) {
-      console.log(err);
       output(dirpath, {summary:'error on http_load'}, checker_result, null, function(err){process.exit(1); return;});
     }
     clearInterval(posterId);
