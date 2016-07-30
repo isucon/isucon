@@ -85,3 +85,9 @@
         - name: reload nginx
           service: name=nginx state=restarted
       tags: nginx
+    - block:
+        - name: setup mysqld conf
+          copy: src=mysqld.cnf dest=/etc/mysql/mysql.conf.d/mysqld.cnf owner=root group=root mode=0644
+        - name: reload mysql
+          service: name=mysql state=restarted
+      tags: mysql
