@@ -91,3 +91,9 @@
         - name: reload mysql
           service: name=mysql state=restarted
       tags: mysql
+    - block:
+        - name: setup supervisord conf
+          copy: src=supervisord.conf dest=/etc/supervisor/supervisord.conf owner=root group=root mode=0644
+        - name: reload supervisor
+          service: name=supervisor state=restarted
+      tags: supervisor
