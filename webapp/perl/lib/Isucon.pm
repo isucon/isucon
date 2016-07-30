@@ -68,7 +68,7 @@ get '/post' => [qw/recent_commented_articles/] => sub {
 
 post '/post' => sub {
     my ( $self, $c )  = @_;
-    my $sth = $self->dbh->prepare('INSERT INTO article SET title = ?, body = ?');
+    my $sth = $self->dbh->prepare_cached('INSERT INTO article SET title = ?, body = ?');
     $sth->execute($c->req->param('title'), $c->req->param('body'));
     $c->redirect($c->req->uri_for('/'));
 };
@@ -76,14 +76,14 @@ post '/post' => sub {
 post '/comment/:articleid' => sub {
     my ( $self, $c )  = @_;
 
-    my $sth = $self->dbh->prepare('INSERT INTO comment SET article = ?, name =?, body = ?');
+    my $sth = $self->dbh->prepare_cached('INSERT INTO comment SET article = ?, name =?, body = ?');
     $sth->execute(
         $c->args->{articleid},
         $c->req->param('name'), 
         $c->req->param('body')
     );
 
-    $sth = $self->dbh->prepare('UPDATE article SET last_commented_at = CURRENT_TIMESTAMP() WHERE id = ?');
+    $sth = $self->dbh->prepare_cached('UPDATE article SET last_commented_at = CURRENT_TIMESTAMP() WHERE id = ?');
     $sth->execute($c->args->{articleid});
 
     $c->redirect($c->req->uri_for('/article/'.$c->args->{articleid}));
